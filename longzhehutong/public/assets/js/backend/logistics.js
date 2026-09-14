@@ -16,10 +16,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     showExport: true,
                 }
             });
- 
+
             var table = $("#table"); 
             var currentStatus = '';
-            var currentRange = 'month';
+            // 发货时间筛选：起止日期（可筛某一天、某个月或任意区间），空表示全部时间
+            var statDateRange = {start: '', end: ''};
             var statFilterSnapshot = {filter: '', op: '', search: ''};
             // 切换审核状态标签时刷新列表，status=1 为审核中，status=2 为审核通过
             $(".nav-tabs a[data-status]").on('click', function () {
@@ -282,20 +283,19 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     maximumFractionDigits: digits
                 });
             };
-            var loadLogisticsStatistics = function (range) {
-                range = range || currentRange;
-                currentRange = range;
+            var loadLogisticsStatistics = function () {
                 Backend.api.ajax({
                     url: 'logistics/statistics',
                     data: {
-                        range: range,
+                        start_date: statDateRange.start,
+                        end_date: statDateRange.end,
                         filter: statFilterSnapshot.filter,
                         op: statFilterSnapshot.op,
                         search: statFilterSnapshot.search
                     }
                 }, function (data, ret) {
                     var res = ret.data || {};
-                    console.log('[logistics statistics]', range, ret);
+                    console.log('[logistics statistics]', statDateRange, ret);
                     $('#logisticsStatShipmentCount').text(res.shipment_count != null ? res.shipment_count : 0);
                     $('#logisticsStatTrunkFee').text(formatStatNumber(res.trunk_fee, 2));
                     $('#logisticsStatTonnage').text(formatStatNumber(res.tonnage, 2));
@@ -307,15 +307,83 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     Layer.msg((ret && ret.msg) ? ret.msg : '物流统计数据加载失败', {icon: 2});
                 });
             };
-            $('.logistics-range-btn').on('click', function () {
-                $(this).addClass('active').siblings().removeClass('active');
-                loadLogisticsStatistics($(this).data('range'));
+            // 发货时间：原生日期选择（无需第三方组件，点击即弹日历），支持某天/某月/任意区间
+            var $statStart = $('#logisticsStatStartDate');
+            var $statEnd = $('#logisticsStatEndDate');
+            var pad2 = function (n) {
+                return (n < 10 ? '0' : '') + n;
+            };
+            var formatDate = function (date) {
+                return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
+            };
+            // 点击输入框直接弹出系统日历（Chrome/Edge/Firefox 支持 showPicker）
+            var openDatePicker = function (el) {
+                if (el && typeof el.showPicker === 'function') {
+                    try {
+                        el.showPicker();
+                    } catch (e) {
+                        // 需要用户手势或被浏览器拒绝时忽略，用户仍可点右侧日历图标选择
+                    }
+                }
+            };
+            var setStatDateRange = function (start, end) {
+                statDateRange = {start: start || '', end: end || ''};
+                $statStart.val(statDateRange.start);
+                $statEnd.val(statDateRange.end);
+            };
+            // 以输入框当前值为准（起止写反自动交换），然后刷新卡片
+            var applyStatDateRangeFromInputs = function () {
+                var start = $statStart.val() || '';
+                var end = $statEnd.val() || '';
+                if (start !== '' && end !== '' && start > end) {
+                    var tmp = start;
+                    start = end;
+                    end = tmp;
+                }
+                setStatDateRange(start, end);
+                loadLogisticsStatistics();
+            };
+            $statStart.on('click focus', function () {
+                openDatePicker(this);
+            }).on('change', applyStatDateRangeFromInputs);
+            $statEnd.on('click focus', function () {
+                openDatePicker(this);
+            }).on('change', applyStatDateRangeFromInputs);
+            $('#logisticsStatQueryBtn').on('click', applyStatDateRangeFromInputs);
+            // 快捷区间：今天/本月/上月/今年
+            $('.logistics-stat-quick').on('click', function () {
+                var now = new Date();
+                var year = now.getFullYear();
+                var month = now.getMonth();
+                var quick = $(this).data('quick');
+                if (quick === 'today') {
+                    setStatDateRange(formatDate(now), formatDate(now));
+                } else if (quick === 'month') {
+                    setStatDateRange(formatDate(new Date(year, month, 1)), formatDate(new Date(year, month + 1, 0)));
+                } else if (quick === 'last_month') {
+                    setStatDateRange(formatDate(new Date(year, month - 1, 1)), formatDate(new Date(year, month, 0)));
+                } else if (quick === 'year') {
+                    setStatDateRange(year + '-01-01', year + '-12-31');
+                }
+                loadLogisticsStatistics();
+            });
+            // 全部时间：清空起止日期
+            $('#logisticsStatClearBtn').on('click', function () {
+                setStatDateRange('', '');
+                loadLogisticsStatistics();
             });
             // 表格每次加载数据（含搜索/切页/切换审核状态）后，按当前筛选刷新卡片
             table.on('load-success.bs.table', function () {
-                loadLogisticsStatistics(currentRange);
+                loadLogisticsStatistics();
             });
-            loadLogisticsStatistics('month');
+            // 默认与原来一致：本月
+            (function () {
+                var now = new Date();
+                var year = now.getFullYear();
+                var month = now.getMonth();
+                setStatDateRange(formatDate(new Date(year, month, 1)), formatDate(new Date(year, month + 1, 0)));
+            })();
+            loadLogisticsStatistics();
         },
         add: function () {
             Controller.api.bindevent();

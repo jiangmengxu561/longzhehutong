@@ -4,7 +4,7 @@ return array (
   'name' => '龙喆互通',
   'beian' => '',
   'cdnurl' => '',
-  'version' => '1.0.4',
+  'version' => '1.0.5',
   'timezone' => 'Asia/Shanghai',
   'forbiddenip' => '',
   'languages' => 
@@ -13,7 +13,7 @@ return array (
     'frontend' => 'zh-cn',
   ),
   'fixedpage' => 'dashboard',
-  'categorytype' => 
+  'categorytype' =>
   array (
     'default' => '默认',
     'page' => '单页',

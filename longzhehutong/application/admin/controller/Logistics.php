@@ -77,77 +77,10 @@ class Logistics extends Backend
         if (empty($id)){
             $this->error('登录信息已过期,请刷新浏览器');
         }
-        $cityFilter = null;
-
-        // 加盟商：按 region_ids 过滤物流专线（发货城市），只看到自己负责区域内的专线
-        $franchise = \app\admin\library\FranchiseService::resolveFranchiseForAdmin((int)$id);
-        if ($franchise) {
-            $franchiseCityNames = [];
-            foreach ((json_decode((string)($franchise['region_ids'] ?? '[]'), true) ?: []) as $v) {
-                $rid = (int)$v;
-                if ($rid <= 0) {
-                    continue;
-                }
-                $area = Db::name('area')->where('id', $rid)->find();
-                if (!$area) {
-                    continue;
-                }
-                $areaName = (string)($area['shortname'] ?? $area['name'] ?? '');
-                $level = (int)($area['level'] ?? 0);
-                // 区/县（level>=3）取其上级市名，因为 logistics.origincity 存的是市
-                if ($level >= 3 && !empty($area['pid'])) {
-                    $parentName = (string)Db::name('area')->where('id', (int)$area['pid'])->value('shortname');
-                    if ($parentName === '') {
-                        $parentName = (string)Db::name('area')->where('id', (int)$area['pid'])->value('name');
-                    }
-                    if ($parentName !== '' && !in_array($parentName, $franchiseCityNames, true)) {
-                        $franchiseCityNames[] = $parentName;
-                    }
-                }
-                if ($areaName !== '' && !in_array($areaName, $franchiseCityNames, true)) {
-                    $franchiseCityNames[] = $areaName;
-                }
-            }
-            if (!empty($franchiseCityNames)) {
-                $cityFilter = $franchiseCityNames;
-            } else {
-                // 加盟商未配置区域：不展示任何专线（防止泄露全部物流数据）
-                $franchiseNoRegion = true;
-            }
-        }
-
-        if($id != 1 && $cityFilter === null){
-            $admininfo = Db::name('admin')->where('id',$id)->find();
-            $admin_group_access =  Db::name('auth_group_access')->where('uid',$admininfo['id'])->find();
-            $identity   = Db::name('auth_group')->where('id',$admin_group_access['group_id'])->find();
-
-            if ($identity['identity'] == 4) {
-                $city = $admininfo['city'];
-                $city = json_decode($city,true);
-                $cityNames = [];
-
-                if (is_array($city)) {
-                    foreach ($city as $v) {
-                        $v = (int)$v;
-                        if ($v <= 0) {
-                            continue;
-                        }
-                        $city_name = Db::name('area')->where('id', $v)->value('shortname');
-                        if (!$city_name) {
-                            $city_name = Db::name('area')->where('id', $v)->value('name');
-                        }
-                        if ($city_name) {
-                            $cityNames[] = $city_name;
-                        }
-                    }
-                }
-
-                // 如果选择了“全国”，则不做城市过滤
-                if (!empty($cityNames)) {
-                    $cityFilter = $cityNames;
-                }
-            }
-        }
+        // 加盟商 / 区域子后台：只看自己负责区域（发货城市）内的物流专线
+        $visibleScope = $this->resolveLogisticsVisibleCityScope((int)$id);
+        $cityFilter = $visibleScope['cities'];
+        $franchiseNoRegion = $visibleScope['no_region'];
 
         //设置过滤方法
         $this->request->filter(['strip_tags', 'trim']);
@@ -295,35 +228,190 @@ class Logistics extends Backend
     }
 
     /**
+     * 当前登录管理员在「物流」里可见的发货区域（城市）范围。
+     *  - 加盟商：按其 fa_franchise.region_ids 解析（区/县取其上级市名，因为 logistics.origincity 存的是市）
+     *  - 物流角色组(identity=4)：按其 fa_admin.city
+     *
+     * @param int $adminId 0 = 取当前登录管理员
+     * @return array{cities:?array<int,string>,no_region:bool}
+     *         cities=null 表示不按城市限制（总后台等）；no_region=true 表示无任何可见区域（应显示空数据）
+     */
+    protected function resolveLogisticsVisibleCityScope(int $adminId = 0): array
+    {
+        $adminId = $adminId > 0 ? $adminId : (int)$this->auth->id;
+        if ($adminId <= 0) {
+            return ['cities' => null, 'no_region' => false];
+        }
+
+        $cityFilter = null;
+        $noRegion = false;
+
+        // 加盟商：按 region_ids 过滤物流专线（发货城市），只看到自己负责区域内的专线
+        $franchise = FranchiseService::resolveFranchiseForAdmin($adminId);
+        if ($franchise) {
+            $franchiseCityNames = [];
+            foreach ((json_decode((string)($franchise['region_ids'] ?? '[]'), true) ?: []) as $v) {
+                $rid = (int)$v;
+                if ($rid <= 0) {
+                    continue;
+                }
+                $area = Db::name('area')->where('id', $rid)->find();
+                if (!$area) {
+                    continue;
+                }
+                $areaName = (string)($area['shortname'] ?? $area['name'] ?? '');
+                $level = (int)($area['level'] ?? 0);
+                // 区/县（level>=3）取其上级市名，因为 logistics.origincity 存的是市
+                if ($level >= 3 && !empty($area['pid'])) {
+                    $parentName = (string)Db::name('area')->where('id', (int)$area['pid'])->value('shortname');
+                    if ($parentName === '') {
+                        $parentName = (string)Db::name('area')->where('id', (int)$area['pid'])->value('name');
+                    }
+                    if ($parentName !== '' && !in_array($parentName, $franchiseCityNames, true)) {
+                        $franchiseCityNames[] = $parentName;
+                    }
+                }
+                if ($areaName !== '' && !in_array($areaName, $franchiseCityNames, true)) {
+                    $franchiseCityNames[] = $areaName;
+                }
+            }
+            if (!empty($franchiseCityNames)) {
+                $cityFilter = $franchiseCityNames;
+            } else {
+                // 加盟商未配置区域：不展示任何专线（防止泄露全部物流数据）
+                $noRegion = true;
+            }
+        }
+
+        if ($adminId != 1 && $cityFilter === null) {
+            $admininfo = Db::name('admin')->where('id', $adminId)->find();
+            $groupAccess = $admininfo
+                ? Db::name('auth_group_access')->where('uid', $admininfo['id'])->find()
+                : null;
+            $identity = $groupAccess
+                ? Db::name('auth_group')->where('id', (int)($groupAccess['group_id'] ?? 0))->find()
+                : null;
+
+            if ($identity && (int)$identity['identity'] === 4) {
+                $cityNames = [];
+                foreach ((json_decode((string)($admininfo['city'] ?? ''), true) ?: []) as $v) {
+                    $v = (int)$v;
+                    if ($v <= 0) {
+                        continue;
+                    }
+                    $city_name = Db::name('area')->where('id', $v)->value('shortname');
+                    if (!$city_name) {
+                        $city_name = Db::name('area')->where('id', $v)->value('name');
+                    }
+                    if ($city_name) {
+                        $cityNames[] = $city_name;
+                    }
+                }
+
+                // 如果选择了“全国”，则不做城市过滤
+                if (!empty($cityNames)) {
+                    $cityFilter = $cityNames;
+                }
+            }
+        }
+
+        return ['cities' => $cityFilter, 'no_region' => $noRegion];
+    }
+
+    /**
+     * 生成「可见发货区域」对应的物流专线过滤（订单表通过 logistics_id 命中这些专线）
+     *
+     * @param array<int,string>|null $cities   可见城市名，null=不限制
+     * @param bool                   $noRegion 无任何可见区域时统计结果恒为 0
+     * @return array{0:?string,1:array<string,mixed>} [sql, 命名绑定]；sql=null 表示不加限制
+     */
+    protected function buildLogisticsCityScopeSql(?array $cities, bool $noRegion = false): array
+    {
+        if ($noRegion) {
+            return ['1 = 0', []];
+        }
+        if (empty($cities)) {
+            return [null, []];
+        }
+
+        $conditions = [];
+        $bind = [];
+        $index = 0;
+        foreach ($cities as $cityName) {
+            $cityName = trim((string)$cityName);
+            if ($cityName === '') {
+                continue;
+            }
+            $name = 'lgCity_v' . (++$index);
+            $conditions[] = 'origincity LIKE :' . $name;
+            $bind[$name] = '%' . $cityName . '%';
+        }
+        if ($conditions === []) {
+            return [null, []];
+        }
+
+        $logisticsTable = (string)config('database.prefix') . 'logistics';
+        $sql = 'logistics_id IN (SELECT id FROM `' . $logisticsTable . '` WHERE ' . implode(' OR ', $conditions) . ')';
+
+        return [$sql, $bind];
+    }
+
+    /**
      * 物流统计卡片（发货单量 / 总干线费 / 总吨数 / 总方位）
      *
      * 路由：logistics/statistics
      * 前端：logistics 列表页顶部统计卡片，按"发货时间"(order.createtime)筛选
-     * 预设区间：month=本月, last_month=上个月, year=今年
+     * 时间筛选：start_date/end_date（YYYY-MM-DD，可筛某一天/某个月/任意区间，都为空=全部时间）
+     * 兼容旧参数：range=month(本月)/last_month(上个月)/year(今年)/all(全部)
      *
      * @return Json
      */
     public function statistics()
     {
-        $range = trim((string)$this->request->param('range', 'month'));
+        $range = trim((string)$this->request->param('range', ''));
+        $startDate = trim((string)$this->request->param('start_date', ''));
+        $endDate   = trim((string)$this->request->param('end_date', ''));
+        // 前端是否显式传了起止日期（传了但为空表示“全部时间”，与完全不传的默认本月区分开）
+        $allParams = (array)$this->request->param();
+        $hasDateParams = array_key_exists('start_date', $allParams) || array_key_exists('end_date', $allParams);
         $filter = (string)$this->request->param('filter', '');
         $op     = (string)$this->request->param('op', '');
         $search = (string)$this->request->param('search', '');
-        list($startTime, $endTime) = $this->resolveStatDateRange($range);
+        if ($startDate !== '' || $endDate !== '') {
+            // 自定义时间筛选：可只筛某一天（起止同一天）、某个月或任意区间
+            list($startTime, $endTime) = $this->resolveStatDateRangeByDates($startDate, $endDate);
+            $range = 'custom';
+        } elseif ($hasDateParams) {
+            // 用户点了“全部时间”（传了空的起止日期）：不限制时间
+            $range = 'all';
+            list($startTime, $endTime) = [null, null];
+        } else {
+            // 兼容旧的预设区间参数（month/last_month/year/all）
+            $range = $range !== '' ? $range : 'month';
+            list($startTime, $endTime) = $this->resolveStatDateRange($range);
+        }
 
         // 若物流列表存在搜索/筛选条件，则统计卡片联动为“这些物流”的订单数据；否则统计全部
         $logisticsIds = $this->resolveFilteredLogisticsIds($filter, $op, $search);
 
+        // 与列表同口径：加盟商/区域子后台只统计自己可见发货区域（城市）内物流专线的发货单
+        $visibleScope = $this->resolveLogisticsVisibleCityScope();
+        list($cityScopeSql, $cityScopeBind) = $this->buildLogisticsCityScopeSql($visibleScope['cities'], $visibleScope['no_region']);
+
         // 每个指标独立构建查询（ThinkPHP5 中 count()/sum() 会改变查询对象状态，不能复用）
-        $buildQuery = function () use ($startTime, $endTime, $logisticsIds) {
+        $buildQuery = function () use ($startTime, $endTime, $logisticsIds, $cityScopeSql, $cityScopeBind) {
             $q = Db::name('order');
-            // 仅统计有效发货单：排除新下单未确认价格的状态(pay_status=5)
-            $q->where('pay_status', '<>', 5);
+            // 仅统计有效发货单：排除未下单(5)、已取消(4)、已驳回(8)
+            $q->whereNotIn('pay_status', [4, 5, 8]);
             if ($startTime !== null) {
                 $q->where('createtime', '>=', $startTime);
             }
             if ($endTime !== null) {
                 $q->where('createtime', '<=', $endTime);
+            }
+            if ($cityScopeSql !== null) {
+                // 只看得到本区域（发货城市）的物流专线时，其发货单统计同样只算这些专线
+                $q->whereRaw($cityScopeSql, $cityScopeBind);
             }
             if ($logisticsIds !== null) {
                 if (empty($logisticsIds)) {
@@ -403,6 +491,44 @@ class Logistics extends Backend
 
         $ids = Db::name('logistics')->where($where)->column('id');
         return array_values(array_filter(array_map('intval', (array)$ids)));
+    }
+
+    /**
+     * 按自定义起止日期解析统计时间范围（发货时间筛选）
+     *
+     *  - 起止都填：开始日 00:00:00 ~ 结束日 23:59:59（同一天即“筛某一天”，同一月首尾即“筛某个月”）
+     *  - 只填一个：单边过滤（>= 开始日 或 <= 结束日）
+     *  - 都为空：不限制时间
+     *
+     * @param string $startDate YYYY-MM-DD（也兼容 2026/09/14、带时间等写法）
+     * @param string $endDate   YYYY-MM-DD
+     * @return array [startTime|null, endTime|null]
+     */
+    protected function resolveStatDateRangeByDates($startDate, $endDate)
+    {
+        $toTime = function ($date, $isEnd) {
+            $date = trim((string)$date);
+            if ($date === '') {
+                return null;
+            }
+            $ts = strtotime($date);
+            if ($ts === false) {
+                return null;
+            }
+
+            return strtotime(date('Y-m-d', $ts) . ($isEnd ? ' 23:59:59' : ' 00:00:00'));
+        };
+
+        $startTime = $toTime($startDate, false);
+        $endTime   = $toTime($endDate, true);
+        // 起止写反了自动交换，避免筛不出数据
+        if ($startTime !== null && $endTime !== null && $startTime > $endTime) {
+            $tmp = $startTime;
+            $startTime = strtotime(date('Y-m-d', $endTime) . ' 00:00:00');
+            $endTime   = strtotime(date('Y-m-d', $tmp) . ' 23:59:59');
+        }
+
+        return [$startTime, $endTime];
     }
 
     /**

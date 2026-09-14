@@ -721,6 +721,64 @@ class FranchiseService
     }
 
     /**
+     * 加盟商（含下级）体系对应的角色组ID集合（fa_auth_group 子树），
+     * 用于判断订单是否被「本加盟商体系之外」的账号（如总部线路/调度）抢过。
+     *
+     * @param int[] $scopeIds 加盟商ID（含下级）
+     * @return int[]
+     */
+    protected static function getScopeAuthGroupIdsForOrderScope(array $scopeIds): array
+    {
+        $groupIds = [];
+        foreach ($scopeIds as $sid) {
+            $gid = (int)Db::name('franchise')->where('id', (int)$sid)->value('group_id');
+            if ($gid <= 0) {
+                continue;
+            }
+            foreach (self::getAuthGroupIdsInSubtree($gid) as $g) {
+                $groupIds[(int)$g] = true;
+            }
+        }
+
+        return array_keys($groupIds);
+    }
+
+    /**
+     * 生成「未被本加盟商体系之外账号抢过」的 SQL 条件（抢单记录见 fa_admin_order）
+     *
+     * @param string $orderIdExpr   订单主键表达式（如 `fa_order`.`id`）
+     * @param int[]  $scopeGroupIds 本加盟商体系的角色组ID；为空表示只能收完全没人抢过的订单
+     */
+    protected static function buildNotGrabbedOutsideFranchiseSql(string $orderIdExpr, array $scopeGroupIds): string
+    {
+        if ($scopeGroupIds === []) {
+            return "NOT EXISTS (SELECT 1 FROM `fa_admin_order` ao WHERE ao.order_id = {$orderIdExpr})";
+        }
+
+        return "NOT EXISTS (SELECT 1 FROM `fa_admin_order` ao WHERE ao.order_id = {$orderIdExpr}"
+            . ' AND ao.group_id NOT IN (' . implode(',', array_map('intval', $scopeGroupIds)) . '))';
+    }
+
+    /**
+     * 订单是否已被「本加盟商体系之外」的账号抢过（单条校验用，口径同上）
+     *
+     * @param int[] $scopeIds 加盟商ID（含下级）
+     */
+    protected static function orderGrabbedOutsideFranchiseScope(array $scopeIds, int $orderId): bool
+    {
+        if ($orderId <= 0) {
+            return false;
+        }
+        $scopeGroupIds = self::getScopeAuthGroupIdsForOrderScope($scopeIds);
+        $query = Db::name('admin_order')->where('order_id', $orderId);
+        if ($scopeGroupIds !== []) {
+            $query->where('group_id', 'not in', $scopeGroupIds);
+        }
+
+        return (bool)$query->value('id');
+    }
+
+    /**
      * 把“加盟商范围”应用到订单查询：加盟商管理员=自己+所有下级；调度/线路子账号=其所属那家加盟商。
      * 范围 = 绑定会员的订单 OR 该加盟商区域内“未绑定普通用户”的订单（多区域）。
      *
@@ -753,12 +811,16 @@ class FranchiseService
 
         $ucol = $tableExpr . '.`userid`';
         $lcol = $tableExpr . '.`loading`';
+        $icol = $tableExpr . '.`id`';
         $parts = [];
         $bind = [];
         $seq = 0;
         if ($memberIds !== []) {
             $parts[] = $ucol . ' IN (' . implode(',', array_map('intval', $memberIds)) . ')';
         }
+        // 区域公海只收「尚未被本加盟商体系之外账号（如总部线路/调度）抢过」的订单：
+        // 已被外部处理过的历史订单不该出现在加盟商后台（如加盟商入驻后才匹配到区域的老单）
+        $notGrabbedOutside = self::buildNotGrabbedOutsideFranchiseSql($icol, self::getScopeAuthGroupIdsForOrderScope($scopeIds));
         foreach ($regionIds as $rid) {
             $names = self::getOrderRegionMatchSegments($rid);
             if ($names === []) {
@@ -776,7 +838,7 @@ class FranchiseService
             $unbound = "NOT EXISTS (SELECT 1 FROM `fa_franchise_member` fm WHERE fm.user_id = " . $ucol . ')'
                 . " AND NOT EXISTS (SELECT 1 FROM `fa_admin_user_bind` ab WHERE ab.user_id = " . $ucol . ')';
             $parts[] = "EXISTS (SELECT 1 FROM `fa_user_address` la WHERE la.id = " . $lcol . ' AND '
-                . implode(' AND ', $conds) . ') AND ' . $unbound;
+                . implode(' AND ', $conds) . ') AND ' . $unbound . ' AND ' . $notGrabbedOutside;
         }
         if ($parts === []) {
             $query->where('id', -1);
@@ -1063,7 +1125,8 @@ class FranchiseService
                 }
             }
             if ($ok) {
-                return true;
+                // 区域内订单：已被本加盟商体系之外的账号（如总部线路/调度）抢过的不再属于本加盟商范围
+                return !self::orderGrabbedOutsideFranchiseScope($scopeIds, (int)($order['id'] ?? 0));
             }
         }
 

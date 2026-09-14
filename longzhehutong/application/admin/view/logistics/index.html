@@ -20,11 +20,13 @@
 .logistics-stat-name { font-size: 12px; color: #999; margin-top: 2px; }
 .logistics-stat-filter { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eef1f5; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 .logistics-stat-filter-label { font-size: 13px; color: #666; margin-right: 4px; }
-.logistics-range-btn.active { background: #4878FF; border-color: #4878FF; color: #fff; }
+.logistics-stat-date { width: 150px; display: inline-block; }
+.logistics-stat-filter-sep { font-size: 13px; color: #666; padding: 0 2px; }
+.logistics-stat-quick { margin-right: 2px; }
 </style>
 <div class="panel panel-default panel-intro">
     {:build_heading()}
-
+ 
     <div class="panel-body"> a
         <!-- 物流统计卡片 -->
         <div class="logistics-stat-wrap">
@@ -60,10 +62,19 @@
             </div>
             <div class="logistics-stat-filter">
                 <span class="logistics-stat-filter-label">发货时间：</span>
-                <button type="button" class="btn btn-xs btn-default logistics-range-btn active" data-range="month">本月</button>
-                <button type="button" class="btn btn-xs btn-default logistics-range-btn" data-range="last_month">上个月</button>
-                <button type="button" class="btn btn-xs btn-default logistics-range-btn" data-range="year">今年</button>
-                <button type="button" class="btn btn-xs btn-default logistics-range-btn" data-range="all">全部</button>
+                <input type="date" id="logisticsStatStartDate" class="form-control input-sm logistics-stat-date"
+                       placeholder="开始日期" autocomplete="off">
+                <span class="logistics-stat-filter-sep">至</span>
+                <input type="date" id="logisticsStatEndDate" class="form-control input-sm logistics-stat-date"
+                       placeholder="结束日期" autocomplete="off">
+                <button type="button" class="btn btn-xs btn-primary" id="logisticsStatQueryBtn">查询</button>
+                <span class="logistics-stat-filter-label" style="margin-left:8px;">快捷：</span>
+                <button type="button" class="btn btn-xs btn-default logistics-stat-quick" data-quick="today">今天</button>
+                <button type="button" class="btn btn-xs btn-default logistics-stat-quick" data-quick="month">本月</button>
+                <button type="button" class="btn btn-xs btn-default logistics-stat-quick" data-quick="last_month">上月</button>
+                <button type="button" class="btn btn-xs btn-default logistics-stat-quick" data-quick="year">今年</button>
+                <button type="button" class="btn btn-xs btn-default" id="logisticsStatClearBtn">全部时间</button>
+                <span class="text-muted" style="font-size:12px;">起止填同一天=筛某天；跨越整月=筛某月</span>
             </div>
         </div>
 

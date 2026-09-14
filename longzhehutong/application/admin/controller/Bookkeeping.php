@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\common\controller\Backend;
 use app\common\library\BookkeepingAuditLog;
+use app\admin\library\AdminUserBind;
 use app\admin\library\FranchiseService;
 use think\Db;
 use think\Exception;
@@ -28,7 +29,7 @@ class Bookkeeping extends Backend
     {
         parent::_initialize();
         $this->model = new \app\admin\model\Bookkeeping;
- 
+
     }
 
     /**
@@ -117,6 +118,8 @@ class Bookkeeping extends Backend
         if ($incomeEnd !== null) {
             $incomeQuery->where('createtime', '<=', $incomeEnd);
         }
+        // 与订单列表同口径：加盟商/子后台只统计自己可见范围内的订单收入（总后台仍为全网）
+        $this->applyIncomeVisibleOrderScope($incomeQuery);
         $totalIncome = (float)$incomeQuery->sum('pay_price');
         // 总支出：记账(bookkeeping)里所有已填数据之和（不区分状态/类型）
         $totalExpense = $totalPrice;
@@ -328,4 +331,51 @@ class Bookkeeping extends Backend
         return FranchiseService::getCurrentAdminFranchiseScopeAdminIds((int)$this->auth->id);
     }
 
-}
+    /**
+     * 给「总收入」订单查询套用当前管理员的可见范围，口径与「订单列表」一致：
+     *  - 总后台/总部角色组(1、30)：不限制（全网）
+     *  - 加盟商体系账号（含其线路/调度/财务子账号）：本加盟商(含下级)绑定会员订单 + 区域内未绑定普通用户订单
+     *  - 总部直属线路/调度：总部绑定会员订单 + 无加盟商区域内的未绑定普通用户订单
+     *  - 旧代理/线路/调度：本组绑定会员订单 + 上级代理组区域内的订单
+     *
+     * @param \think\db\Query $query 订单查询对象
+     */
+    private function applyIncomeVisibleOrderScope($query): void
+    {
+        $adminId = (int)$this->auth->id;
+        if ($adminId <= 0 || $this->auth->isSuperAdmin()
+            || in_array(1, $this->auth->getGroupIds(), true)
+            || in_array(30, $this->auth->getGroupIds(), true)) {
+            // 总后台（或总部角色组）：全网收入
+            return;
+        }
+
+        if (FranchiseService::resolveFranchiseForAdmin($adminId) !== null) {
+            FranchiseService::applyFranchiseOrderScope($query, $adminId);
+            return;
+        }
+        if (FranchiseService::isHqLineDispatch($adminId)) {
+            FranchiseService::applyHqOrderScope($query, $adminId);
+            return;
+        }
+
+        // 旧代理/线路/调度：与订单列表的绑定会员 + 代理组区域口径保持一致
+        $adminGroup = AdminUserBind::getPrimaryBusinessGroupIdForAdmin($adminId);
+        $groupIdentity = AdminUserBind::resolveEffectiveOrderRoleIdentity($adminGroup);
+        if (!AdminUserBind::orderListUsesBindRegionalScope($groupIdentity)) {
+            return;
+        }
+        $scopeAgentGroupId = AdminUserBind::getOrderScopeAgentGroupId($adminGroup, $groupIdentity);
+        $staffBindUserIds = AdminUserBind::getBoundUserIdsForLineDispatchRole($adminGroup, $groupIdentity, $adminId);
+        if ($staffBindUserIds !== null) {
+            $regionalAdmins = AdminUserBind::getRegionalSourceAdminIdsForOrderScope($adminGroup, $groupIdentity, $adminId);
+            AdminUserBind::applyBoundOrRegionalScopeToOrderModelQuery($query, $staffBindUserIds, $regionalAdmins, $scopeAgentGroupId);
+        }
+        if ($groupIdentity === AdminUserBind::AUTH_GROUP_IDENTITY_AGENT) {
+            $agentBindUserIds = AdminUserBind::getBoundUserIdsForAgentGroup($scopeAgentGroupId);
+            $regionalAdmins = AdminUserBind::getRegionalSourceAdminIdsForOrderScope($adminGroup, $groupIdentity, $adminId);
+            AdminUserBind::applyBoundOrRegionalScopeToOrderModelQuery($query, $agentBindUserIds, $regionalAdmins, $scopeAgentGroupId);
+        }
+    }
+
+} 

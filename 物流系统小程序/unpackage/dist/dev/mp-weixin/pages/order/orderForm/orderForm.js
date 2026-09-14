@@ -101,13 +101,13 @@ var components
 try {
   components = {
     uniPopup: function () {
-      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 283))
+      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 297))
     },
     lPicker: function () {
-      return Promise.all(/*! import() | uni_modules/lime-picker/components/l-picker/l-picker */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/lime-picker/components/l-picker/l-picker")]).then(__webpack_require__.bind(null, /*! @/uni_modules/lime-picker/components/l-picker/l-picker.vue */ 290))
+      return Promise.all(/*! import() | uni_modules/lime-picker/components/l-picker/l-picker */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/lime-picker/components/l-picker/l-picker")]).then(__webpack_require__.bind(null, /*! @/uni_modules/lime-picker/components/l-picker/l-picker.vue */ 304))
     },
     lPickerItem: function () {
-      return Promise.all(/*! import() | uni_modules/lime-picker/components/l-picker-item/l-picker-item */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/lime-picker/components/l-picker-item/l-picker-item")]).then(__webpack_require__.bind(null, /*! @/uni_modules/lime-picker/components/l-picker-item/l-picker-item.vue */ 299))
+      return Promise.all(/*! import() | uni_modules/lime-picker/components/l-picker-item/l-picker-item */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/lime-picker/components/l-picker-item/l-picker-item")]).then(__webpack_require__.bind(null, /*! @/uni_modules/lime-picker/components/l-picker-item/l-picker-item.vue */ 313))
     },
   }
 } catch (e) {

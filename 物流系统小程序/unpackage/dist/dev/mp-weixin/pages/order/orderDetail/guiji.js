@@ -99,7 +99,7 @@ var components
 try {
   components = {
     zflLogistics: function () {
-      return __webpack_require__.e(/*! import() | uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics */ "uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics").then(__webpack_require__.bind(null, /*! @/uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics.vue */ 308))
+      return __webpack_require__.e(/*! import() | uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics */ "uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics").then(__webpack_require__.bind(null, /*! @/uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics.vue */ 322))
     },
   }
 } catch (e) {
