@@ -1,0 +1,183 @@
+<form id="extraCostForm" role="form" autocomplete="off" method="post">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">填写税点</h4>
+        </div>
+        <div class="panel-body">
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label class="control-label">取货司机税点</label>
+                        <div class="input-group">
+                            <input id="pickupTaxPoint" type="number" class="form-control" name="pickup_tax_point" placeholder="请输入取货司机税点" min="0" step="0.01" value="{$pickup_tax_point|default=''}">
+<!--                            <span class="input-group-addon">%</span>-->
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">送货司机税点</label>
+                        <div class="input-group">
+                            <input id="deliveryTaxPoint" type="number" class="form-control" name="delivery_tax_point" placeholder="请输入送货司机税点" min="0" step="0.01" value="{$delivery_tax_point|default=''}">
+<!--                            <span class="input-group-addon">%</span>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layer-footer footer-bar">
+        <div class="row">
+            <label class="control-label col-xs-12 col-sm-4"></label>
+            <div class="col-xs-12 col-sm-8">
+                <button id="submitPickupBtn" type="button" class="btn btn-primary btn-embossed">保存取货税点</button>
+                <button id="submitDeliveryBtn" type="button" class="btn btn-primary btn-embossed">保存送货税点</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+(function(){
+    function getIdsFromUrl() {
+        var url = new URL(window.location.href);
+        var fromQuery = url.searchParams.get('ids');
+        if (fromQuery) return fromQuery;
+        var m = url.pathname.match(/\/ids\/([^\/?]+)/);
+        return m ? m[1] : '';
+    }
+
+    var pickupInput = document.getElementById('pickupTaxPoint');
+    var deliveryInput = document.getElementById('deliveryTaxPoint');
+    var submitPickupBtn = document.getElementById('submitPickupBtn');
+    var submitDeliveryBtn = document.getElementById('submitDeliveryBtn');
+    var statusLabel = document.getElementById('driverStatusLabel');
+    var markBtn = document.getElementById('markCompleteBtn');
+    var driverStatus = parseInt("{$driver_status|default=0}", 10) || 0;
+    var orderNumber = "{$orderNumber|default=''}";
+
+    function doSubmit(saveType) {
+        var pickupTaxPoint = pickupInput.value.trim() === '' ? '' : parseFloat(pickupInput.value);
+        var deliveryTaxPoint = deliveryInput.value.trim() === '' ? '' : parseFloat(deliveryInput.value);
+        if (saveType === 'pickup') {
+            if (pickupTaxPoint !== '' && (isNaN(pickupTaxPoint) || pickupTaxPoint < 0)) {
+                Layer.alert('请输入有效的取货司机税点', {icon: 2});
+                return;
+            }
+        } else if (saveType === 'delivery') {
+            if (deliveryTaxPoint !== '' && (isNaN(deliveryTaxPoint) || deliveryTaxPoint < 0)) {
+                Layer.alert('请输入有效的送货司机税点', {icon: 2});
+                return;
+            }
+        }
+        var ids = getIdsFromUrl();
+        if (!ids) {
+            Layer.alert('缺少订单信息，请重新打开页面', {icon: 2});
+            return;
+        }
+        var payload = new URLSearchParams();
+        payload.append('ids', ids);
+        payload.append('save_type', saveType);
+        if (saveType === 'pickup') {
+            payload.append('pickup_tax_point', pickupTaxPoint === '' ? '' : pickupTaxPoint);
+        } else if (saveType === 'delivery') {
+            payload.append('delivery_tax_point', deliveryTaxPoint === '' ? '' : deliveryTaxPoint);
+        }
+
+        var btn = saveType === 'pickup' ? submitPickupBtn : submitDeliveryBtn;
+        btn.disabled = true;
+
+        fetch("{:url('logistics/add_cost_other_price')}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: payload.toString()
+        }).then(function(res){
+            var contentType = res.headers.get('content-type') || '';
+            if (contentType.indexOf('application/json') !== -1) {
+                return res.json();
+            }
+            return res.text().then(function(text){
+                return {code:0, msg:text};
+            });
+        }).then(function(resp){
+            var ok = !!(resp && (Number(resp.code) === 1 || resp.success || (typeof resp.status === 'string' && resp.status.toLowerCase() === 'success')));
+            if (ok) {
+                try {
+                    if (window.parent && window.parent.layer) {
+                        var frameIndex = window.parent.layer.getFrameIndex(window.name);
+                        window.parent.layer.close(frameIndex);
+                        window.parent.location.reload();
+                        return;
+                    }
+                } catch (e) {}
+                window.location.reload();
+            } else {
+                Layer.alert((resp && resp.msg) || '提交失败', {icon: 2});
+            }
+        }).catch(function(){
+            Layer.alert('提交失败，请重试', {icon: 2});
+        }).finally(function(){
+            btn.disabled = false;
+        });
+    }
+
+    submitPickupBtn.addEventListener('click', function(){ doSubmit('pickup'); });
+    submitDeliveryBtn.addEventListener('click', function(){ doSubmit('delivery'); });
+
+    function renderStatus(status) {
+        if (!statusLabel) return;
+        if (status === 2) {
+            statusLabel.textContent = '已完成';
+            statusLabel.className = 'label label-success';
+            if (markBtn) markBtn.style.display = 'none';
+        } else {
+            statusLabel.textContent = '未完成';
+            statusLabel.className = 'label label-warning';
+            if (markBtn) markBtn.style.display = 'inline-block';
+        }
+    }
+
+    renderStatus(driverStatus);
+
+    if (markBtn) {
+        markBtn.addEventListener('click', function () {
+            if (!orderNumber) {
+                Layer.alert('订单号缺失，无法操作', {icon: 2});
+                return;
+            }
+            markBtn.disabled = true;
+            fetch("{:url('logistics/confirm_driver_complete')}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: new URLSearchParams({orderid: orderNumber, type: 1}).toString()
+            }).then(function (res) {
+                var ctype = res.headers.get('content-type') || '';
+                if (ctype.indexOf('application/json') === -1) {
+                    return res.text().then(function () { throw new Error('后端未返回 JSON'); });
+                }
+                return res.json();
+            }).then(function (resp) {
+                if (resp.code === 1) {
+                    driverStatus = 2;
+                    renderStatus(driverStatus);
+                    Layer.alert(resp.msg || '操作成功', {icon: 1});
+                } else {
+                    Layer.alert(resp.msg || '操作失败', {icon: 2});
+                }
+            }).catch(function () {
+                Layer.alert('操作失败', {icon: 2});
+            }).finally(function () {
+                markBtn.disabled = false;
+            });
+        });
+    }
+})();
+</script>

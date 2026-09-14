@@ -1,0 +1,239 @@
+@charset "UTF-8";
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.subordinate {
+  padding-bottom: 160rpx;
+  min-height: 100vh;
+  background-color: #F7F6FA;
+}
+.list-box {
+  padding: 0 20rpx;
+}
+.card {
+  margin-top: 20rpx;
+  background: #FFF;
+  border-radius: 20rpx;
+  padding: 24rpx 28rpx;
+}
+.tag {
+  padding: 10rpx 20rpx;
+  background: #EEF4FF;
+  border-radius: 28rpx;
+  color: #4878FF;
+  font-size: 24rpx;
+}
+.action-btn {
+  width: 240rpx;
+  height: 64rpx;
+  border-radius: 32rpx;
+  border: 1rpx solid #4878FF;
+  color: #4878FF;
+  text-align: center;
+  line-height: 64rpx;
+  font-size: 26rpx;
+}
+/* 查看订单按钮：小一点、实心渐变、右上角悬浮感 */
+.order-btn {
+  min-width: 180rpx;
+  padding: 0 28rpx;
+  height: 60rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #4897FF 0%, #4878FF 100%);
+  box-shadow: 0 8rpx 16rpx rgba(72, 151, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #FFFFFF;
+}
+.action-btn.danger {
+  color: #E84A4A;
+  border-color: #E84A4A;
+}
+.empty {
+  text-align: center;
+  color: #888;
+  font-size: 28rpx;
+  padding: 120rpx 0;
+}
+.buttons {
+  position: fixed;
+  left: 30rpx;
+  bottom: 88rpx;
+  width: 690rpx;
+  height: 88rpx;
+  background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+  border-radius: 50rpx;
+  font-weight: bold;
+  font-size: 30rpx;
+  color: #FFFFFF;
+  line-height: 88rpx;
+  text-align: center;
+}
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+.modal {
+  width: 660rpx;
+  background: #FFF;
+  border-radius: 20rpx;
+  padding: 30rpx 30rpx 24rpx;
+}
+.form {
+  margin-top: 20rpx;
+}
+.form-item {
+  display: flex;
+  align-items: center;
+  border: 1rpx solid #F0F0F0;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  margin-bottom: 12rpx;
+  height: 88rpx;
+}
+.form-item input {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+}
+.label {
+  width: 200rpx;
+  color: #333;
+  font-size: 28rpx;
+}
+.mini-btn {
+  margin-left: 14rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  border: 1rpx solid #4878FF;
+  color: #4878FF;
+}
+.mini-btn.add {
+  display: inline-block;
+  margin-top: 6rpx;
+}
+.mini-btn.danger {
+  border-color: #E84A4A;
+  color: #E84A4A;
+}
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10rpx;
+}
+.modal-btn {
+  width: 300rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  text-align: center;
+  line-height: 80rpx;
+  font-size: 30rpx;
+}
+.modal-btn.cancel {
+  border: 1rpx solid #4878FF;
+  color: #4878FF;
+}
+.modal-btn.confirm {
+  background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+  color: #FFF;
+}
+.promote-tabs {
+  display: flex;
+  margin-top: 20rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  position: relative;
+}
+.tab-item.active {
+  color: #4878FF;
+  font-weight: bold;
+}
+.tab-item.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  -webkit-transform: translateX(-50%);
+          transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background: #4878FF;
+  border-radius: 2rpx;
+}
+.qrcode-box {
+  margin-top: 20rpx;
+  text-align: center;
+}
+.qrcode-tip {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 30rpx;
+}
+.qrcode-image-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx;
+  background: #F7F8FA;
+  border-radius: 12rpx;
+}
+.qrcode-image {
+  width: 400rpx;
+  height: 400rpx;
+}
+.qrcode-loading {
+  padding: 60rpx 0;
+  font-size: 26rpx;
+  color: #999;
+}
+.qrcode-download-btn {
+  margin-top: 30rpx;
+  width: 100%;
+  height: 80rpx;
+  background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+  border-radius: 16rpx;
+  color: #FFF;
+  font-size: 28rpx;
+  text-align: center;
+  line-height: 80rpx;
+  font-weight: bold;
+}

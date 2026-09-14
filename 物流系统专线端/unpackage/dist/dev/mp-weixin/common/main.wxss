@@ -1,0 +1,66 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*每个页面公共css */
+/* 设置整个项目的背景色 */
+page {
+	background-color: #F7F6FA;
+	font-size: 28rpx;
+	color: #000;
+}
+input {
+	font-size:28rpx;
+	color: #333;
+}
+.flex {
+	display: flex;
+}
+.flexJusp {
+	display: flex;
+	justify-content: space-between;
+}
+.yihang {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.erhang{
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+

@@ -1,0 +1,65 @@
+<div class="panel panel-default panel-intro">
+    {:build_heading()}
+
+    <div class="panel-body">
+        <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade active in" id="one">
+                <div class="widget-body no-padding">
+                    {if !$auth->isSuperAdmin()}
+                    <div class="alert alert-info" style="margin:10px 10px 0;padding:8px 12px;border-radius:4px;">
+                        <i class="fa fa-info-circle"></i> 子后台的修改/删除操作需提交申请，等待总后台审核确认后方可生效。
+                    </div>
+                    {/if}
+                    <div id="toolbar" class="toolbar">
+                        <a href="javascript:;" class="btn btn-primary btn-refresh" title="{:__('Refresh')}" ><i class="fa fa-refresh"></i> </a>
+                        <a href="javascript:;" class="btn btn-success btn-add {:$auth->check('bookkeeping/add')?'':'hide'}" title="{:__('Add')}" ><i class="fa fa-plus"></i> {:__('Add')}</a>
+                        <a href="javascript:;" class="btn btn-success btn-edit btn-disabled disabled {:$auth->check('bookkeeping/edit')?'':'hide'}" title="{:__('Edit')}" ><i class="fa fa-pencil"></i> {:__('Edit')}</a>
+                        <a href="javascript:;" class="btn btn-danger btn-del btn-disabled disabled {:$auth->check('bookkeeping/del')?'':'hide'}" title="{:__('Delete')}" ><i class="fa fa-trash"></i> {:__('Delete')}</a>
+                    </div>
+                    <div id="bookkeeping-statistics" class="order-statistics-panel" style="margin-top:10px;display:none;"></div>
+                    <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
+                           data-operate-edit="{:$auth->check('bookkeeping/edit')}"
+                           data-operate-del="{:$auth->check('bookkeeping/del')}"
+                           width="100%">
+                    </table>
+                </div> 
+            </div>
+
+        </div>
+    </div>
+</div>
+<style>
+.order-statistics-panel {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+.statistics-item {
+    text-align: center;
+    padding: 15px;
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 10px;
+}
+.statistics-item.income {
+    border-left: 4px solid #5cb85c;
+}
+.statistics-item.expense {
+    border-left: 4px solid #f0ad4e;
+}
+.statistics-item.profit {
+    border-left: 4px solid #337ab7;
+}
+.statistics-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+.statistics-value {
+    font-size: 20px;
+    font-weight: bold;
+}
+</style>

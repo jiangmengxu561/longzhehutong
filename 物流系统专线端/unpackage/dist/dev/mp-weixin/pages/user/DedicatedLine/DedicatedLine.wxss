@@ -1,0 +1,131 @@
+
+.content {
+	position: relative;
+	min-height: 100vh;
+}
+.bg-gradient {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 750rpx;
+	height: 272rpx;
+	background: linear-gradient(180deg, #D8EEFC 0%, #F7F8FA 100%);
+	z-index: 0;
+	pointer-events: none;
+}
+.nav-fixed {
+	width: 750rpx;
+	z-index: 99;
+	position: fixed;
+	top: 0;
+	left: 0;
+	color: #000;
+}
+.nav-bar {
+	font-weight: bold;
+	font-size: 36rpx;
+	align-items: center;
+}
+.nav-back {
+	width: 100rpx;
+	text-align: center;
+}
+.page-body {
+	position: relative;
+	z-index: 2;
+}
+.empty-box {
+	margin: 120rpx 40rpx 0;
+	text-align: center;
+}
+.empty-tip {
+	font-size: 28rpx;
+	color: #999;
+	margin-bottom: 48rpx;
+}
+.add-btn {
+	width: 320rpx;
+	height: 80rpx;
+	line-height: 80rpx;
+	margin: 0 auto;
+	background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 40rpx;
+	font-weight: bold;
+	font-size: 30rpx;
+	color: #FFFFFF;
+	padding: 0;
+	border: none;
+}
+.add-btn::after {
+	border: none;
+}
+.ship-card {
+	position: relative;
+	z-index: 2;
+	background: #FFFFFF;
+	border-radius: 24rpx;
+	margin: 20rpx;
+	padding: 28rpx 24rpx;
+}
+.ship-title {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #333;
+}
+.ship-sub {
+	margin-top: 12rpx;
+	font-size: 26rpx;
+	color: #888;
+}
+.ship-actions {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	align-items: center;
+	margin-top: 24rpx;
+}
+.action-btn {
+	min-width: 140rpx;
+	height: 64rpx;
+	line-height: 64rpx;
+	text-align: center;
+	border-radius: 32rpx;
+	font-size: 26rpx;
+	margin: 0 0 0 20rpx;
+	padding: 0 24rpx;
+	box-sizing: border-box;
+}
+.action-btn::after {
+	border: none;
+}
+.action-btn.edit {
+	color: #4878FF;
+	background: #FFFFFF;
+	border: 2rpx solid #4878FF;
+}
+.action-btn.del {
+	color: #EC0000;
+	background: #FFFFFF;
+	border: 2rpx solid #EC0000;
+}
+.action-btn-hover {
+	opacity: 0.7;
+}
+.continue-btn {
+	width: auto;
+	margin: 40rpx;
+	height: 80rpx;
+	line-height: 80rpx;
+	text-align: center;
+	border: 2rpx dashed #4878FF;
+	border-radius: 40rpx;
+	color: #4878FF;
+	font-size: 28rpx;
+	font-weight: bold;
+	background: transparent;
+	padding: 0;
+}
+.continue-btn::after {
+	border: none;
+}
+

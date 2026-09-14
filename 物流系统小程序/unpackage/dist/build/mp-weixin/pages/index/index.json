@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "首页",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "xzw-notice": "/uni_modules/xzw-notice/components/xzw-notice/xzw-notice",
+    "uni-popup": "/uni_modules/uni-popup/components/uni-popup/uni-popup"
+  }
+}

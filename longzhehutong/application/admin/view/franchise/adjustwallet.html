@@ -1,0 +1,43 @@
+<form id="adjust-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    {:token()}
+    <input type="hidden" name="franchise_id" value="{$franchise.id}">
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">加盟商:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" type="text" value="{$franchise.name}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">当前余额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input class="form-control" type="text" value="{$franchise.wallet_balance}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">调整方向:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-type" class="form-control" name="type">
+                <option value="income">充值（线下收款，线上加余额）</option>
+                <option value="deduct">扣减（线下退款，线上减余额）</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">金额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-amount" class="form-control" name="amount" type="number" step="0.01" min="0.01" placeholder="必填，大于0">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">备注:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-remark" class="form-control" name="remark" type="text" placeholder="如：线下转账充值/退款">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>

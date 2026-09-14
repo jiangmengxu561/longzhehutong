@@ -1,0 +1,189 @@
+<form id="extraCostForm" role="form" autocomplete="off" method="post">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">修改订单总运费</h4>
+        </div>
+        <div class="panel-body">
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label class="control-label">额外金额 (元)</label>
+                        <div class="input-group">
+                            <input id="extraPrice" type="number" class="form-control" name = "pickup_driver_fee" placeholder="请输入增加的总运费" min="0" step="0.01" required>
+                            <span class="input-group-addon">元</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">备注</label>
+                        <textarea id="extraRemark" class="form-control" rows="3" placeholder="请输入备注说明"></textarea>
+                    </div>
+                </div>
+            </div>
+            {if !empty($extraList)}
+            <hr>
+            <h5>已提交的总运费增加记录</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width:120px;">金额(元)</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach name="extraList" item="item"}
+                        <tr>
+                            <td>{:number_format($item.price, 2)}</td>
+                            <td>{$item.remarks|default='-'}</td>
+                        </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+            {/if}
+        </div>
+    </div>
+    <div class="layer-footer footer-bar">
+        <div class="row">
+            <label class="control-label col-xs-12 col-sm-4"></label>
+            <div class="col-xs-12 col-sm-8">
+                <button id="submitBtn" type="button" class="btn btn-primary btn-embossed">提交</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+(function(){
+    function getIdsFromUrl() {
+        var url = new URL(window.location.href);
+        var fromQuery = url.searchParams.get('ids');
+        if (fromQuery) return fromQuery;
+        var m = url.pathname.match(/\/ids\/([^\/?]+)/);
+        return m ? m[1] : '';
+    }
+
+    var priceInput = document.getElementById('extraPrice');
+    var remarkInput = document.getElementById('extraRemark');
+    var submitBtn = document.getElementById('submitBtn');
+    var statusLabel = document.getElementById('driverStatusLabel');
+    var markBtn = document.getElementById('markCompleteBtn');
+    var driverStatus = parseInt("{$driver_status|default=0}", 10) || 0;
+    var orderNumber = "{$orderNumber|default=''}";
+
+    submitBtn.addEventListener('click', function(){
+        var price = parseFloat(priceInput.value);
+        // if (isNaN(price) || price <= 0) {
+        //     Layer.alert('请输入有效的额外金额', {icon: 2});
+        //     return;
+        // }
+        var ids = getIdsFromUrl();
+        if (!ids) {
+            Layer.alert('缺少订单信息，请重新打开页面', {icon: 2});
+            return;
+        }
+        Layer.confirm('确认增加订单总运费？提交后需等待总后台审核生效。', {icon: 3, title: '确认提交'}, function (confirmIndex) {
+            Layer.close(confirmIndex);
+            submitBtn.disabled = true;
+            var payload = new URLSearchParams();
+            payload.append('ids', ids);
+            payload.append('price', price.toFixed(2));
+            payload.append('remarks', remarkInput.value.trim());
+
+            fetch("{:url('logistics/add_order_other_price')}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: payload.toString()
+            }).then(function(res){
+                var contentType = res.headers.get('content-type') || '';
+                if (contentType.indexOf('application/json') !== -1) {
+                    return res.json();
+                }
+                return res.text().then(function(text){
+                    return {code:0, msg:text};
+                });
+            }).then(function(resp){
+                var ok = !!(resp && (Number(resp.code) === 1 || resp.success || (typeof resp.status === 'string' && resp.status.toLowerCase() === 'success')));
+                if (ok) {
+                    try {
+                        if (window.parent && window.parent.layer) {
+                            var frameIndex = window.parent.layer.getFrameIndex(window.name);
+                            window.parent.layer.close(frameIndex);
+                            window.parent.location.reload();
+                            return;
+                        }
+                    } catch (e) {}
+                    window.location.reload();
+                } else {
+                    Layer.alert((resp && resp.msg) || '提交失败', {icon: 2});
+                }
+            }).catch(function(){
+                Layer.alert('提交失败，请重试', {icon: 2});
+            }).finally(function(){
+                submitBtn.disabled = false;
+            });
+        });
+    });
+
+    function renderStatus(status) {
+        if (!statusLabel) return;
+        if (status === 2) {
+            statusLabel.textContent = '已完成';
+            statusLabel.className = 'label label-success';
+            if (markBtn) markBtn.style.display = 'none';
+        } else {
+            statusLabel.textContent = '未完成';
+            statusLabel.className = 'label label-warning';
+            if (markBtn) markBtn.style.display = 'inline-block';
+        }
+    }
+
+    renderStatus(driverStatus);
+
+    if (markBtn) {
+        markBtn.addEventListener('click', function () {
+            if (!orderNumber) {
+                Layer.alert('订单号缺失，无法操作', {icon: 2});
+                return;
+            }
+            markBtn.disabled = true;
+            fetch("{:url('logistics/confirm_driver_complete')}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: new URLSearchParams({orderid: orderNumber, type: 1}).toString()
+            }).then(function (res) {
+                var ctype = res.headers.get('content-type') || '';
+                if (ctype.indexOf('application/json') === -1) {
+                    return res.text().then(function () { throw new Error('后端未返回 JSON'); });
+                }
+                return res.json();
+            }).then(function (resp) {
+                if (resp.code === 1) {
+                    driverStatus = 2;
+                    renderStatus(driverStatus);
+                    Layer.alert(resp.msg || '操作成功', {icon: 1});
+                } else {
+                    Layer.alert(resp.msg || '操作失败', {icon: 2});
+                }
+            }).catch(function () {
+                Layer.alert('操作失败', {icon: 2});
+            }).finally(function () {
+                markBtn.disabled = false;
+            });
+        });
+    }
+})();
+</script>
+
+
+

@@ -1,0 +1,19 @@
+
+<form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="" style="display: none">
+    <pre id="code" class="ace_editor" style="min-height: calc(100vh - 30px);margin-bottom: 0px;"><textarea name="code11" class="ace_text-input">{$code|htmlentities}</textarea></pre>
+    <input type="hidden" name="module" id="module" value="{$Think.get.module|htmlentities}">
+    <input type="hidden" name="controller" id="controller" value="{$Think.get.c|htmlentities}">
+    <input type="hidden" name="action" id="action" value="{$Think.get.a|htmlentities}">
+    <input type="hidden" name="type" id="type" value="{$Think.get.type|htmlentities}">
+    <input type="hidden" name="file" id="file" value="{$filepath|htmlentities}">
+    <div class="form-group layer-footer" style="margin-bottom:0;">
+        <div class="col-xs-12 col-sm-8" style="width: 75%;padding-left:20px;line-height: 30px;">
+            当前文件：{$size|default=0}， 最近修改：{$filectime|default=0}， 状态：<span id="update_file">未修改</span>， 备份文件数量：<span id="backup_stats_count">{$backup_stats.fileCount|default=0}</span>， 备份文件总大小：<span id="backup_stats_size">{$backup_stats.humanSize|default=0}</span>
+            <button type="button" class="btn btn-danger btn-sm btn-clear-backup" style="padding: 0px 5px;margin-left: 3px" data-path="{$filepath|htmlentities}"><i class="fa fa-trash"></i> 清理备份</button>
+        </div>
+        <div class="col-xs-12 col-sm-8" style="text-align: right;width: 25%;padding-right:20px;">
+            <button type="button" class="btn btn-info btn-copy" data-path="{$filepath|htmlentities}"><i class="fa fa-copy"></i> 拷贝路径</button>
+            <button type="button" id="editpage_btn" class="btn btn-success btn-embossed {if $editpage_config['setreadonly'] == 1}disabled{/if}" {if $editpage_config['setreadonly'] == 1}disabled{/if}><i class="fa fa-save"></i> 保存(Ctrl + S)</button>
+        </div>
+    </div>
+</form>

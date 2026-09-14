@@ -1,0 +1,97 @@
+<style>
+/* 物流评级星级样式 */
+.logistics-level-wrap { display: inline-flex; align-items: center; gap: 2px; flex-wrap: nowrap; }
+.logistics-level-wrap .star-btn { padding: 0 1px; border: none; background: none; cursor: pointer; color: #ddd; font-size: 14px; line-height: 1; transition: color .15s ease; outline: none; }
+.logistics-level-wrap .star-btn:hover { color: #f0ad4e; }
+.logistics-level-wrap .star-btn.active { color: #f0ad4e; }
+.logistics-level-wrap .star-btn i { display: block; }
+
+/* 物流统计卡片 */
+.logistics-stat-wrap { background: #fff; border-radius: 4px; padding: 16px 16px 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.logistics-stats-row { display: flex; flex-wrap: wrap; margin: -8px -8px 0; }
+.logistics-stat-card { flex: 1 1 22%; min-width: 190px; display: flex; align-items: center; padding: 12px 14px; margin: 8px; border-radius: 4px; border: 1px solid #eef1f5; background: #fafbfc; }
+.logistics-stat-icon { width: 48px; height: 48px; line-height: 48px; text-align: center; font-size: 22px; color: #fff; border-radius: 6px; margin-right: 12px; flex-shrink: 0; }
+.logistics-stat-icon.lg-blue { background: #23b7e5; }
+.logistics-stat-icon.lg-green { background: #27c24c; }
+.logistics-stat-icon.lg-orange { background: #f05050; }
+.logistics-stat-icon.lg-purple { background: #7266ba; }
+.logistics-stat-info { min-width: 0; }
+.logistics-stat-value { font-size: 22px; font-weight: 700; color: #333; line-height: 1.2; word-break: break-all; }
+.logistics-stat-name { font-size: 12px; color: #999; margin-top: 2px; }
+.logistics-stat-filter { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eef1f5; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.logistics-stat-filter-label { font-size: 13px; color: #666; margin-right: 4px; }
+.logistics-range-btn.active { background: #4878FF; border-color: #4878FF; color: #fff; }
+</style>
+<div class="panel panel-default panel-intro">
+    {:build_heading()}
+
+    <div class="panel-body"> a
+        <!-- 物流统计卡片 -->
+        <div class="logistics-stat-wrap">
+            <div class="logistics-stats-row">
+                <div class="logistics-stat-card">
+                    <span class="logistics-stat-icon lg-blue"><i class="fa fa-truck"></i></span>
+                    <div class="logistics-stat-info">
+                        <div class="logistics-stat-value" id="logisticsStatShipmentCount">0</div>
+                        <div class="logistics-stat-name">物流发货单量</div>
+                    </div>
+                </div>
+                <div class="logistics-stat-card">
+                    <span class="logistics-stat-icon lg-green"><i class="fa fa-yen"></i></span>
+                    <div class="logistics-stat-info">
+                        <div class="logistics-stat-value" id="logisticsStatTrunkFee">0</div>
+                        <div class="logistics-stat-name">总干线费（元）</div>
+                    </div>
+                </div>
+                <div class="logistics-stat-card">
+                    <span class="logistics-stat-icon lg-orange"><i class="fa fa-weight"></i></span>
+                    <div class="logistics-stat-info">
+                        <div class="logistics-stat-value" id="logisticsStatTonnage">0</div>
+                        <div class="logistics-stat-name">总吨数（吨）</div>
+                    </div>
+                </div>
+                <div class="logistics-stat-card">
+                    <span class="logistics-stat-icon lg-purple"><i class="fa fa-cubes"></i></span>
+                    <div class="logistics-stat-info">
+                        <div class="logistics-stat-value" id="logisticsStatVolume">0</div>
+                        <div class="logistics-stat-name">总方位（方）</div>
+                    </div>
+                </div>
+            </div>
+            <div class="logistics-stat-filter">
+                <span class="logistics-stat-filter-label">发货时间：</span>
+                <button type="button" class="btn btn-xs btn-default logistics-range-btn active" data-range="month">本月</button>
+                <button type="button" class="btn btn-xs btn-default logistics-range-btn" data-range="last_month">上个月</button>
+                <button type="button" class="btn btn-xs btn-default logistics-range-btn" data-range="year">今年</button>
+                <button type="button" class="btn btn-xs btn-default logistics-range-btn" data-range="all">全部</button>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="active"><a href="javascript:;" data-status="" role="tab">全部</a></li>
+            <li><a href="javascript:;" data-status="1" role="tab">待审核</a></li>
+            <li><a href="javascript:;" data-status="2" role="tab">审核通过</a></li>
+        </ul>
+        <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade active in" id="tab-all">
+                <div class="widget-body no-padding">
+                    <div id="toolbar" class="toolbar">
+                        <a href="javascript:;" class="btn btn-primary btn-refresh" title="{:__('Refresh')}" ><i class="fa fa-refresh"></i> </a>
+                        <a href="javascript:;" class="btn btn-success btn-add {:$auth->check('logistics/add')?'':'hide'}" title="{:__('Add')}" ><i class="fa fa-plus"></i> {:__('Add')}</a>
+                        <a href="javascript:;" class="btn btn-success btn-edit btn-disabled disabled {:$auth->check('logistics/edit')?'':'hide'}" title="{:__('Edit')}" ><i class="fa fa-pencil"></i> {:__('Edit')}</a>
+                        <a href="javascript:;" class="btn btn-danger btn-del btn-disabled disabled {:$auth->check('logistics/del')?'':'hide'}" title="{:__('Delete')}" ><i class="fa fa-trash"></i> {:__('Delete')}</a>
+                        <a href="javascript:;" class="btn btn-info btn-import" title="{:__('Import')}" ><i class="fa fa-upload"></i> {:__('Import')}</a>
+<!--                        <a href="../uploads/demo.xls" target="_blank" class="btn btn-info btn-error-light" title="{:__('导入模板')}" ><i class="fa fa-file-excel-o"></i> {:__('导入模板')}</a>-->
+                    </div>
+                    <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
+                           data-operate-edit="{:$auth->check('logistics/edit')}"
+                           data-operate-del="{:$auth->check('logistics/del')}"
+                           data-is-super-admin="{$auth->id==1?1:0}"
+                           width="100%">
+                    </table>
+                </div>
+            </div> 
+
+        </div>
+    </div>
+</div>

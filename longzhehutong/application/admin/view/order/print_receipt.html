@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>签收单打印 - {$receipt.orderid|htmlentities}</title>
+    <style>
+        /* 热敏纸：宽 7.5cm × 高 9cm，单页 */
+        @page {
+            size: 75mm 90mm;
+            margin: 0;
+        }
+        * {
+            box-sizing: border-box;
+        } 
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        @media print {
+            /* 整份文档只占一页，避免 page-break 与满页固定高把整块推到第 2 页（首尾空白页） */
+            html, body {
+                width: 75mm !important;
+                height: 90mm !important;
+                max-width: 75mm !important;
+                max-height: 90mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                background: #fff !important;
+            }
+            body { margin: 0; }
+            .no-print { display: none !important; }
+            .sheet {
+                margin: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                height: 89mm !important;
+                max-height: 89mm !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        body {
+            /* 黑体/雅黑在低分辨率热敏上笔画更饱满，比过小字号宋体更不易糊 */
+            font-family: "SimHei", "黑体", "Microsoft YaHei", "微软雅黑", "SimSun", "宋体", Arial, sans-serif;
+            color: #000;
+            background: #e8e8e8;
+        }
+        .sheet {
+            position: relative;
+            width: 75mm;
+            /* 略小于一页高度，给浏览器分页/亚像素舍入留余量，减少被拆成多页 */
+            min-height: 0;
+            height: 89mm;
+            max-height: 89mm;
+            margin: 8px auto;
+            padding: 1mm 0mm 0.8mm;
+            overflow: hidden;
+            font-size: 8.5pt;
+            line-height: 1.12;
+            color: #000;
+            background: #fff;
+            border: 1px solid #ccc;
+        }
+        h1 {
+            text-align: center;
+            font-size: 13pt;
+            font-weight: bold;
+            letter-spacing: 0.25em;
+            margin: 0 0 0.6mm;
+            padding: 0;
+            line-height: 1.05;
+        }
+        .order-no {
+            text-align: center;
+            font-size: 9.5pt;
+            font-weight: bold;
+            margin: 0 0 1mm;
+            line-height: 1.1;
+            word-break: break-all;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 9pt;
+            margin: 0.7mm 0 0.25mm;
+            padding-bottom: 0;
+            border-bottom: 0.5pt solid #000;
+            line-height: 1.05;
+        }
+        .row-line {
+            margin: 0;
+            padding: 0;
+            line-height: 1.12;
+            word-break: break-all;
+        }
+        .label {
+            display: inline;
+            margin: 0;
+            padding: 0;
+            border: none;
+            outline: none;
+            color: #000;
+            font-weight: bold;
+            vertical-align: baseline;
+        }
+        .row-address {
+            display: flex;
+            align-items: flex-start;
+        }
+        .row-address .label {
+            flex: 0 0 auto;
+        }
+        .addr-text {
+            flex: 1 1 0;
+            min-width: 0;
+            font-size: 8.5pt;
+            font-weight: normal;
+            word-break: break-all;
+            overflow-wrap: anywhere;
+            line-height: 1.12;
+        }
+        .inline-gap {
+            margin-left: 0.6em;
+            white-space: nowrap;
+        }
+        .hint {
+            margin: 0.6mm 0 0;
+            padding: 0.4mm 18mm 0 0;
+            text-align: center;
+            font-size: 8pt;
+            font-weight: bold;
+            color: #000;
+            line-height: 1.05;
+            border-top: 0.4pt dashed #000;
+        }
+        .sheet-logo {
+            position: absolute;
+            z-index: 2;
+            right: 5mm;      /* 增大数值 → 往左移动 */
+            bottom: -2mm;      /* 增大数值 → 往下移动 */
+            max-height: 14mm;
+            max-width: 20mm;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            object-position: right bottom;
+            border: none;
+            outline: none;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    </style>
+</head>
+<body>
+    <div class="sheet">
+        <h1>签 收 单</h1>
+        <div class="order-no">单号：{$receipt.orderid|htmlentities}</div>
+
+        <div class="section-title">收方信息</div>
+        <div class="row-line"><span class="label">姓名：</span>{$recv.user_name|default=''|htmlentities}</div>
+        <div class="row-line"><span class="label">电话：</span>{$recv.mobile|default=''|htmlentities}</div>
+        <div class="row-line row-address"><span class="label">地址：</span><span class="addr-text">{$recv.line|default=''|htmlentities}</span></div>
+
+        <div class="section-title">寄方信息</div>
+        <div class="row-line"><span class="label">姓名：</span>{$send.user_name|default=''|htmlentities}</div>
+        <div class="row-line"><span class="label">电话：</span>{$send.mobile|default=''|htmlentities}</div>
+        <div class="row-line row-address"><span class="label">地址：</span><span class="addr-text">{$send.line|default=''|htmlentities}</span></div>
+
+        <div class="section-title">货物信息</div>
+        <div class="row-line"><span class="label">品名：</span>{$receipt.goods_name|htmlentities}<span class="inline-gap">包装：{$receipt.pack_type|htmlentities}</span></div>
+        <div class="row-line"><span class="label">件数：</span>{$receipt.num|htmlentities} 件<span class="inline-gap">付款：{$receipt.pay_type_name|htmlentities}</span></div>
+        <div class="row-line"><span class="label">重量：</span>{$receipt.weight|htmlentities} 吨<span class="inline-gap">体积：{$receipt.volume|htmlentities} m³</span></div>
+
+        <div class="section-title">费用信息</div>
+        <div class="row-line"><span class="label">运费：</span>￥{$receipt.pay_price|htmlentities}</div>
+        <div class="row-line"><span class="label">保价：</span>￥{$receipt.declare_value|htmlentities}<span class="inline-gap">服务：￥{$receipt.service_fee|htmlentities}</span></div>
+        <div class="row-line"><span class="label">下单：</span>{$receipt.createtime|htmlentities}</div>
+        {if condition="$receipt.show_cod"}
+        <div class="row-line"><span class="label">代收：</span>￥{$receipt.cod_amount|htmlentities}</div>
+        {/if}
+
+        <div class="hint">请核对后签收</div>
+        {notempty name="receipt_logo"}
+        <img class="sheet-logo" src="{$receipt_logo}" alt="">
+        {/notempty}
+    </div>
+    <script>
+    (function () {
+        function runPrint() {
+            window.print();
+        }
+        function afterLogoReady() {
+            var el = document.querySelector('.sheet-logo');
+            if (!el || !el.getAttribute('src')) {
+                runPrint();
+                return;
+            }
+            if (el.complete && el.naturalWidth > 0) {
+                runPrint();
+                return;
+            }
+            var done = false;
+            function once() {
+                if (done) {
+                    return;
+                }
+                done = true;
+                runPrint();
+            }
+            el.addEventListener('load', once);
+            el.addEventListener('error', once);
+            setTimeout(once, 3500);
+        }
+        window.addEventListener('load', afterLogoReady);
+    })();
+    </script>
+</body>
+</html>

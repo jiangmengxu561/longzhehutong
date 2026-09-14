@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>加盟商后台操作手册（图文版·一步一图）</title>
+<style>
+  :root{
+    --side:#222d32; --side-hover:#1a2226; --side-active:#3c8dbc;
+    --topbar:#3c8dbc; --content:#ecf0f5; --panel:#fff;
+    --bord:#d2d6de; --txt:#333; --muted:#8b8b8b;
+    --btn:#3c8dbc; --btn-s:#00a65a; --btn-w:#f39c12; --btn-d:#dd4b39;
+    --red:#e74c3c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f6f9;color:var(--txt);
+       font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;line-height:1.6}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
+  h1{font-size:26px;margin:8px 0 4px}
+  .lead{color:#666;margin:0 0 18px}
+  .toc{position:sticky;top:0;z-index:90;background:#fff;border:1px solid var(--bord);
+       border-radius:8px;padding:10px 14px;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .toc b{font-size:14px;margin-right:8px}
+  .toc a{margin:2px 6px;color:#337ab7;text-decoration:none;font-size:13px;white-space:nowrap;display:inline-block}
+  .toc a:hover{text-decoration:underline}
+
+  .step{background:#fff;border:1px solid var(--bord);border-radius:10px;
+        margin-bottom:26px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .step-head{display:flex;align-items:center;gap:12px;padding:14px 18px;
+             border-bottom:1px solid #eee;background:#fafafa}
+  .step-badge{background:var(--btn);color:#fff;font-size:13px;font-weight:700;
+              padding:4px 12px;border-radius:14px;white-space:nowrap}
+  .step-head h3{margin:0;font-size:18px}
+  .step-desc{padding:12px 18px 4px;color:#444;font-size:14px}
+  .step-desc ol,.step-desc ul{margin:4px 0 0 20px;padding:0}
+  .blk{background:#f5f7fa;border-left:3px solid var(--btn);padding:8px 12px;
+       margin:8px 0;border-radius:4px;font-size:13px;color:#555}
+
+  /* browser chrome */
+  .browser{margin:14px 18px;border:1px solid var(--bord);border-radius:8px;overflow:hidden;
+           box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .bbar{background:#f1f1f1;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;
+        gap:6px;padding:6px 10px}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .url{flex:1;background:#fff;border:1px solid #ddd;border-radius:14px;font-size:12px;
+       color:#888;padding:3px 12px;margin:0 8px}
+  .shot{position:relative;background:var(--content);font-size:12px}
+
+  /* app chrome */
+  .app{display:flex;min-height:520px}
+  .sb{width:200px;background:var(--side);color:#b8c7ce;flex:0 0 200px;display:flex;flex-direction:column}
+  .sb .brand{height:48px;background:#367fa9;color:#fff;display:flex;align-items:center;
+             padding:0 14px;font-weight:700;font-size:14px;letter-spacing:.5px}
+  .sb .menu{padding:6px 0;overflow:hidden}
+  .sb .mi{padding:10px 16px;cursor:default;display:flex;align-items:center;gap:8px}
+  .sb .mi:hover{background:var(--side-hover)}
+  .sb .mi.on{background:var(--side-active);color:#fff}
+  .sb .mi .k{width:8px;height:8px;border-radius:2px;background:#8aa4b0;flex:0 0 8px}
+  .sb .mi.on .k{background:#fff}
+  .sb .sub{padding:5px 16px 5px 34px;color:#8aa4b0;cursor:default}
+  .sb .sub.on{color:#fff}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--content)}
+  .tb{height:46px;background:#fff;border-bottom:1px solid var(--bord);display:flex;
+      align-items:center;justify-content:space-between;padding:0 14px}
+  .tb .logo{font-weight:700;color:#444;font-size:14px}
+  .tb .u{color:#666;display:flex;align-items:center;gap:8px}
+  .tb .u .av{width:26px;height:26px;border-radius:50%;background:var(--side-active);color:#fff;
+             display:flex;align-items:center;justify-content:center;font-size:12px}
+  .page{padding:14px}
+
+  /* panel */
+  .panel{background:#fff;border:1px solid var(--bord);border-radius:4px}
+  .panel-h{padding:10px 14px;border-bottom:1px solid #eee;font-weight:700;font-size:14px;color:#444}
+  .panel-b{padding:12px 14px}
+
+  .alert{padding:10px 14px;border-radius:4px;margin-bottom:10px;font-size:13px}
+  .alert.i{background:#d9edf7;border:1px solid #bce8f1;color:#31708f}
+  .alert.w{background:#fcf8e3;border:1px solid #faebcc;color:#8a6d3b}
+  .alert.s{background:#dff0d8;border:1px solid #d6e9c6;color:#3c763d}
+
+  .bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .btn{display:inline-block;border:1px solid transparent;border-radius:3px;padding:5px 12px;
+       font-size:12px;cursor:default;color:#fff;line-height:1.4}
+  .btn.pri{background:var(--btn)}.btn.suc{background:var(--btn-s)}
+  .btn.war{background:var(--btn-w)}.btn.dan{background:var(--btn-d)}
+  .btn.dim{background:#f4f4f4;color:#777;border-color:#ddd}
+
+  table.tb2{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+  table.tb2 th{background:#f4f4f4;border:1px solid #e4e4e4;padding:7px 8px;text-align:left;color:#555;
+               font-weight:700}
+  table.tb2 td{border:1px solid #e4e4e4;padding:7px 8px;background:#fff}
+  table.tb2 tr:nth-child(even) td{background:#f9f9f9}
+  .muted{color:#999}.red{color:#c00;font-weight:700}.grn{color:#3c763d}
+  .mini{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;color:#fff;margin:1px}
+  .mini.i{background:var(--btn)}.mini.s{background:var(--btn-s)}
+  .mini.w{background:var(--btn-w)}.mini.d{background:var(--btn-d)}
+
+  form.fz{max-width:560px}
+  .fg{margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .fg label{width:100px;text-align:right;color:#555;font-size:12px;flex:0 0 100px}
+  .fg .inp{flex:1}.fg .inp.disabled{background:#f0f0f0;color:#999;border:1px solid #ddd;
+           border-radius:3px;padding:6px 10px;font-size:12px}
+  .fg select,.fg input{width:100%;border:1px solid #ccc;border-radius:3px;padding:6px 10px;font-size:12px}
+  .help{color:#888;font-size:11px;margin-top:3px}
+  .okbar{display:flex;gap:8px;margin-top:14px;padding-left:110px}
+
+  /* annotation */
+  .ann{position:absolute;z-index:5;display:flex;align-items:center;gap:6px;pointer-events:none}
+  .ann .n{width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font-weight:700;
+          font-size:15px;display:flex;align-items:center;justify-content:center;
+          box-shadow:0 0 0 3px rgba(231,76,60,.35);flex:0 0 26px}
+  .ann .t{background:rgba(255,255,255,.96);border:1px solid var(--red);color:#c0392b;
+          font-size:12px;font-weight:700;padding:4px 9px;border-radius:4px;white-space:nowrap}
+  .ann.ctr .n{top:0}
+
+  .tip{background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffb300;
+       padding:10px 14px;margin:12px 18px 16px;border-radius:5px;font-size:13px;color:#7a5d00}
+  .tip b{color:#b8860b}
+
+  .note{font-size:12px;color:#888;text-align:center;padding:20px 10px 0}
+  .foot{margin-top:30px;padding-top:16px;border-top:1px solid #eee;color:#999;font-size:12px;text-align:center}
+
+  @media(max-width:720px){ .app{flex-direction:column}.sb{width:100%;flex:0 0 auto} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>加盟商后台操作手册（图文版·一步一图）</h1>
+  <p class="lead">给第一次接触系统的人看：每一步讲清楚去哪点、点什么，并配一张后台界面示意图。图中红圈数字标的就是你要点的位置。</p>
+
+  <div class="toc">
+    <b>目录：</b>
+    <a href="#s1">1 登录</a>
+    <a href="#s2">2 找加盟商管理</a>
+    <a href="#s3">3 看钱包/流水</a>
+    <a href="#s4">4 充钱包</a>
+    <a href="#s5">5 会员列表</a>
+    <a href="#s6">6 搜会员绑定</a>
+    <a href="#s7">7 改身份/到期</a>
+    <a href="#s8">8 添加员工</a>
+    <a href="#s9">9 订单列表</a>
+    <a href="#s10">10 订单详情</a>
+    <a href="#s11">11 线路接单</a>
+    <a href="#s12">12 调度配车</a>
+    <a href="#s13">13 司机送货</a>
+    <a href="#s14">14 确认完成</a>
+    <a href="#s15">15 抽佣明细</a>
+    <a href="#s16">16 全局设置</a>
+  </div>
+
+  <!-- 1 登录 -->
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-badge">第 1 步</span><h3>登录后台</h3></div>
+    <div class="step-desc">
+      <ol><li>打开总部给你的后台网址。</li><li>输入你的<b>用户名</b>和<b>密码</b>，点「登录」。</li></ol>
+      <div class="blk">提示：首次登录后，务必到右上角「个人中心」改掉初始密码。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">http://你的后台地址/background/index/login</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>我的订单</div>
+              <div class="mi" style="display:none"></div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">登录</div><div class="u"><span class="av">?</span><span>未登录</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:420px;margin:30px auto">
+                <div class="panel-h">会员 · 加盟商后台 登录</div>
+                <div class="panel-b">
+                  <form class="fz">
+                    <div class="fg"><label>用户名</label><div class="inp"><input type="text" value="jms_zhangsan" placeholder="请输入用户名"></div></div>
+                    <div class="fg"><label>密码</label><div class="inp"><input type="password" value="······" placeholder="请输入密码"></div></div>
+                    <div class="okbar"><span class="btn pri" style="width:100%">登　录</span></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:52%;top:64%"><span class="n">1</span><span class="t">点这里「登录」</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>登录成功后的首页整页截图；若做给员工看，可把「登录框」部分单独截一张。</div>
+  </section>
+
+  <!-- 2 找加盟商管理 -->
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-badge">第 2 步</span><h3>在左侧菜单找到「加盟商管理」</h3></div>
+    <div class="step-desc">
+      <p>加盟商所有操作都集中在<b>左侧菜单</b>。你想做的事对应哪个菜单：</p>
+      <ul><li><b>会员管理</b>：绑客户、改身份。</li><li><b>订单管理 / 我的订单</b>：看单、派单。</li><li><b>加盟商管理</b>：钱包、抽佣、下级、员工。</li><li><b>财务</b>：对账、报表。</li></ul>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">后台首页</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>我的订单</div>
+              <div class="mi"><span class="k"></span>物流/专线</div>
+              <div class="mi"><span class="k"></span>财务记账</div>
+              <div class="mi"><span class="k"></span>财务</div>
+              <div class="mi on"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">控制台</div><div class="u"><span class="av">张</span><span>张三（一级）</span></div></div>
+            <div class="page">
+              <div class="alert i">欢迎回来！今天有 3 个新订单待处理，2 个待指派。</div>
+              <div class="panel"><div class="panel-h">快捷入口</div><div class="panel-b">
+                <div class="bar">
+                  <span class="btn pri">订单管理</span><span class="btn suc">绑定会员</span>
+                  <span class="btn war">钱包/充值</span><span class="btn dim">抽佣明细</span>
+                </div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:2px;top:275px"><span class="n">1</span><span class="t">点「加盟商管理」（左侧）</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截左侧菜单栏 + 首页右上角昵称/身份（能看到你是一级还是二级）。无权限的菜单会隐藏，属正常。</div>
+  </section>
+
+  <!-- 3 钱包流水 -->
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-badge">第 3 步</span><h3>看钱包余额 / 流水</h3></div>
+    <div class="step-desc">
+      <p>在「加盟商管理」列表里，找到<b>你自己那一行</b>，点「<b>钱包</b>」。顶部会显示当前余额，下面是每一笔变动记录。</p>
+      <div class="blk">钱包余额≤0 时不能操作，所以记得先看余额够不够。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/wallet?franchise_id=5</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>财务记账</div>
+              <div class="mi on"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">钱包流水</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="alert w"><b>加盟商：张三（一级）　当前钱包余额：¥ 2,350.00</b></div>
+              <table class="tb2">
+                <tr><th>ID</th><th>方向</th><th>金额</th><th>变动前</th><th>变动后</th><th>关联类型</th><th>备注</th><th>操作人</th><th>时间</th></tr>
+                <tr><td>102</td><td>支出</td><td class="red">-1,000.00</td><td>3,350.00</td><td>2,350.00</td><td>月费</td><td>2026-09 月度加盟费</td><td>系统</td><td>09-01 09:00</td></tr>
+                <tr><td>98</td><td>支出</td><td class="red">-150.00</td><td>3,500.00</td><td>3,350.00</td><td>改会员</td><td>李四 设为兼职</td><td>张三</td><td>08-27 16:20</td></tr>
+                <tr><td>90</td><td>收入</td><td class="grn">+5,000.00</td><td>0.00</td><td>5,000.00</td><td>充值</td><td>线下转账充值</td><td>总部</td><td>08-20 10:00</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:2px;top:52px"><span class="n">1</span><span class="t">顶部：当前钱包余额</span></div>
+        <div class="ann" style="left:62%;top:52px"><span class="n">2</span><span class="t">下方：每一笔收入/支出</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>进入「加盟商管理 → 钱包」，截「顶部余额 + 流水列表」整页。</div>
+  </section>
+
+  <!-- 4 调钱包 -->
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-badge">第 4 步</span><h3>给钱包充钱（调钱包）</h3></div>
+    <div class="step-desc">
+      <ol><li>在「加盟商管理」列表，找到要充的加盟商那一行，点「<b>调钱包</b>」。</li>
+      <li>选<b>方向</b>：充值时选「充值（线下收款，线上加余额）」；退款选「扣减」。</li>
+      <li>填<b>金额</b>和<b>备注</b>（如“线下转账充值”），点确定。</li></ol>
+      <div class="blk">谁能给谁充：总部给一级充；一级给它的二级充。一级<b>不能</b>给自己充。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/adjustwallet?franchise_id=8</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi on"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">调整钱包</div><div class="u"><span class="av">总</span><span>总部</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:600px"><div class="panel-h">调整钱包</div><div class="panel-b">
+                <form class="fz">
+                  <div class="fg"><label>加盟商:</label><div class="inp"><span class="inp disabled">李四（二级，一级：张三）</span></div></div>
+                  <div class="fg"><label>当前余额:</label><div class="inp"><span class="inp disabled">¥ 800.00</span></div></div>
+                  <div class="fg"><label>调整方向:</label><div class="inp"><select><option>充值（线下收款，线上加余额）</option><option>扣减（线下退款，线上减余额）</option></select></div></div>
+                  <div class="fg"><label>金额:</label><div class="inp"><input type="text" value="2000.00"></div></div>
+                  <div class="fg"><label>备注:</label><div class="inp"><input type="text" value="线下转账充值 2000"></div></div>
+                  <div class="okbar"><span class="btn pri">确 定</span></div>
+                </form>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:34%;top:63%"><span class="n">1</span><span class="t">选「充值」</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>这一步通常由总部/上级操作。截图「调整钱包」表单页即可。</div>
+  </section>
+
+  <!-- 5 会员列表 -->
+  <section class="step" id="s5">
+    <div class="step-head"><span class="step-badge">第 5 步</span><h3>会员管理（已绑定的客户）</h3></div>
+    <div class="step-desc">
+      <p>进「加盟商管理 → <b>会员</b>」，这里列的是<b>你自己</b>已绑定的客户，含用户名、手机号、身份、到期时间、平台抽佣%。</p>
+      <div class="blk">想加新客户？点右上角「按手机号绑定会员」按钮（见第 6 步）。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/member?franchise_id=5</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi on"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">会员管理</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="bar">
+                <span class="btn dim">刷新</span><span class="btn suc">按手机号绑定会员</span>
+              </div>
+              <table class="tb2">
+                <tr><th>ID</th><th>用户名</th><th>手机号</th><th>身份/职位</th><th>到期时间</th><th>平台抽佣%</th><th>所属加盟商</th><th>操作</th></tr>
+                <tr><td>1</td><td>李四</td><td>138****0001</td><td>兼职员工</td><td>2026-12-31</td><td>5.00</td><td>张三（一级）</td><td><span class="mini s">改身份/到期</span></td></tr>
+                <tr><td>2</td><td>王五</td><td>138****0002</td><td>正式员工</td><td>长期</td><td>-</td><td>张三（一级）</td><td><span class="mini s">改身份/到期</span></td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:96px;top:25px"><span class="n">1</span><span class="t">点「按手机号绑定会员」</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「会员列表」整页；重点展示右上角「按手机号绑定会员」按钮位置。</div>
+  </section>
+
+  <!-- 6 搜会员绑定 -->
+  <section class="step" id="s6">
+    <div class="step-head"><span class="step-badge">第 6 步</span><h3>按手机号搜会员并绑定</h3></div>
+    <div class="step-desc">
+      <ol><li>点「按手机号绑定会员」，输客户<b>手机号</b>，点「搜索」。</li>
+      <li>若已注册 → 展示用户名/手机号/身份/到期，点「<b>绑定到我的名下</b>」。</li>
+      <li>若未注册 → 提示“需先在平台注册”，让客户的先到小程序注册。</li></ol>
+      <div class="blk">会员<b>只能被一家加盟商绑定</b>，绑定成功后别人不能再绑。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/memberselect</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi on"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">按手机号搜索会员</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:620px"><div class="panel-h">按手机号搜索会员</div><div class="panel-b">
+                <div class="fg"><label>手机号:</label><div class="inp" style="display:flex;gap:8px"><input type="text" value="13800001111" style="flex:1"><span class="btn pri">搜 索</span></div></div>
+                <div class="alert s" style="margin-top:12px">
+                  <b>找到会员：</b>赵六（138****1111）
+                  <table class="tb2" style="margin-top:8px"><tr><td>用户名：赵六</td><td>手机号：138****1111</td></tr><tr><td>身份/职位：普通用户</td><td>到期时间：未设置</td></tr></table>
+                  <div style="margin-top:8px"><span class="btn suc">绑定到我的名下</span></div>
+                </div>
+                <div class="help">若显示“需先在平台注册”，请客户先到小程序注册后再重复此步骤。</div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:74%;top:34%"><span class="n">2</span><span class="t">点「绑定到我的名下」</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「搜索框 + 搜索结果 + 绑定按钮」这一小块即可。</div>
+  </section>
+
+  <!-- 7 改身份/到期 -->
+  <section class="step" id="s7">
+    <div class="step-head"><span class="step-badge">第 7 步</span><h3>修改会员身份 / 到期时间（会扣费）</h3></div>
+    <div class="step-desc">
+      <ol><li>在会员列表点「<b>改身份/到期</b>」。</li>
+      <li>可改<b>用户名称</b>（改名称不扣费）、<b>身份/职位</b>、<b>到期时间</b>、<b>平台抽佣%</b>。</li>
+      <li>注意扣费：设为<b>正式员工</b>=免费（占名额）；设为<b>兼职/普通/会展</b>或<b>改到期</b>按 150元/月 扣。</li></ol>
+      <div class="blk">这只是示意图，实际「正式员工名额」位置会提示“已用 X / 上限 Y”。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/memberedit?user_id=1</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi on"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">修改会员</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:600px"><div class="panel-h">修改会员身份/到期</div><div class="panel-b">
+                <form class="fz">
+                  <div class="fg"><label>会员:</label><div class="inp"><span class="inp disabled">李四（138****0001）</span></div></div>
+                  <div class="fg"><label>用户名称:</label><div class="inp"><input type="text" value="李四"></div></div>
+                  <div class="fg"><label>身份/职位:</label><div class="inp"><select><option>普通用户</option><option>兼职员工</option><option selected>正式员工</option><option>会展员工</option></select><div class="help" style="color:#c00">正式员工名额：已用 1 / 上限 5（设为正式员工免费，占一名额）</div></div></div>
+                  <div class="fg"><label>到期时间:</label><div class="inp"><input type="text" value="2026-12-31" placeholder="选择到期日期"></div></div>
+                  <div class="fg"><label>平台抽佣%:</label><div class="inp"><input type="text" value="5.00"></div></div>
+                  <div class="okbar"><span class="btn pri">确 定</span></div>
+                </form>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:30%;top:55%"><span class="n">1</span><span class="t">身份选「正式员工」免费；其他按月扣费</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「修改会员」表单页；含身份下拉和到期时间，方便员工理解扣费。</div>
+  </section>
+
+  <!-- 8 添加员工 -->
+  <section class="step" id="s8">
+    <div class="step-head"><span class="step-badge">第 8 步</span><h3>添加员工账号（线路 / 调度 / 财务）</h3></div>
+    <div class="step-desc">
+      <ol><li>进「加盟商管理 → <b>员工</b>」点「添加员工」。</li>
+      <li>选<b>角色</b>：线路（接单）/ 调度（配车派司机）/ 财务（记账）。</li>
+      <li>填<b>登录账号、密码、姓名</b>；线路/调度<u>必须</u>填手机号，点确定。</li></ol>
+      <div class="blk">子账号能看/能做哪些，由“角色组权限”勾选决定，默认只开订单/调度/财务等业务菜单。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/staffadd?franchise_id=5</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi on"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">添加员工</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:600px"><div class="panel-h">添加员工（线路/调度/财务）</div><div class="panel-b">
+                <form class="fz">
+                  <div class="fg"><label>角色:</label><div class="inp"><select><option>线路</option><option>调度</option><option>财务</option></select></div></div>
+                  <div class="fg"><label>登录账号:</label><div class="inp"><input type="text" value="dis_zhaoliu"></div></div>
+                  <div class="fg"><label>登录密码:</label><div class="inp"><input type="password" value="······"></div></div>
+                  <div class="fg"><label>姓名/昵称:</label><div class="inp"><input type="text" value="赵六"></div></div>
+                  <div class="fg"><label>电话/手机号:</label><div class="inp"><input type="text" value="13800002222"></div></div>
+                  <div class="okbar"><span class="btn pri">确 定</span></div>
+                </form>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:30%;top:52%"><span class="n">1</span><span class="t">先选角色，再填账号密码</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「员工列表 + 添加员工」两图，教如何建子账号。</div>
+  </section>
+
+  <!-- 9 订单列表 -->
+  <section class="step" id="s9">
+    <div class="step-head"><span class="step-badge">第 9 步</span><h3>订单进来后：看「订单管理」列表</h3></div>
+    <div class="step-desc">
+      <p>某一单进来，先从「<b>订单管理</b>」列表看这一单是谁的、什么状态。重点看<b>下单人、装/卸货地址、金额、找车类型</b>。</p>
+      <div class="blk">判断归属：下单人是你的绑定会员 → 归你；否则看装/卸货地是否落在你选的区域。都不是 → 不用处理。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/order/index</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi on"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">订单管理</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="bar"><span class="btn dim">刷新</span><span class="btn suc">新订单提醒</span><span class="btn pri">录单</span><span class="btn dim">导出</span></div>
+              <table class="tb2">
+                <tr><th>订单号</th><th>下单人</th><th>路线</th><th>金额</th><th>找车类型</th><th>状态</th><th>操作</th></tr>
+                <tr><td>20260907001</td><td>赵六(139**)</td><td>德州→聊城</td><td>¥1,200.00</td><td>配车</td><td><span class="mini w">待指派</span></td><td><span class="mini i">详情</span></td></tr>
+                <tr><td>20260907002</td><td>李四(138**)</td><td>济南→青岛</td><td>¥860.00</td><td>专车</td><td><span class="mini s">已完成</span></td><td><span class="mini i">详情</span></td></tr>
+                <tr><td>20260907003</td><td>王五(137**)</td><td>德州→济南</td><td>¥540.00</td><td>配车</td><td><span class="mini i">进行中</span></td><td><span class="mini i">详情</span></td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:2px;top:170px"><span class="n">1</span><span class="t">看这一单是谁的、什么状态</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「订单管理列表」含状态/金额/找车类型列，方便员工识别“要不要处理”。</div>
+  </section>
+
+  <!-- 10 订单详情 -->
+  <section class="step" id="s10">
+    <div class="step-head"><span class="step-badge">第 10 步</span><h3>查看订单详情，核对信息再派单</h3></div>
+    <div class="step-desc">
+      <p>点「详情」进订单详情，逐项核对：<b>装/卸货地址、联系人电话、货物、重量体积、车型、价格（总运费）、时效、支付方式</b>。</p>
+      <div class="blk">信息不全的，先联系客户补齐再往下派；确认无误后交给线路/调度（见下文流程）。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/order/view?id=1001</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi on"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">订单详情 20260907001</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="panel"><div class="panel-h">订单信息</div><div class="panel-b" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12px">
+                <div><b>下单人：</b>赵六（139****1111）</div><div><b>装货：</b>德州·平原县 · 张先生 139****</div>
+                <div><b>卸货：</b>聊城·东昌府 · 李经理 138****</div><div><b>货物：</b>机械配件 / 2吨 / 4.2m箱式</div>
+                <div><b>总运费：</b><span class="red">¥1,200.00</span>（抽佣基数）</div><div><b>找车类型：</b>配车</div>
+                <div><b>时效：</b>09-07 装 · 09-08 到</div><div><b>支付：</b>线下支付</div>
+              </div></div>
+              <div class="bar" style="margin-top:12px"><span class="btn pri">指派线路</span><span class="btn suc">确认收货/专车到达</span><span class="btn dim">打印托运单</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:8%;top:74%"><span class="n">1</span><span class="t">逐项核对，无误派单</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「订单详情」页，突出“总运费/抽佣基数”和“确认收货/专车到达”按钮位置。</div>
+  </section>
+
+  <!-- 11 线路接单 -->
+  <section class="step" id="s11">
+    <div class="step-head"><span class="step-badge">第 11 步</span><h3>线路接单 / 确认</h3></div>
+    <div class="step-desc">
+      <p>订单确认归属无误后，交给<b>线路（销售）</b>在「我的订单」里<b>接单/确认</b>。确认后订单进入“线路已确认”，才轮到调度配车。</p>
+      <div class="blk">如果你的加盟商小、没有专门线路，就由你（管理员）代做这一步。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/admin/order/index</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi on"><span class="k"></span>我的订单</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">我的订单（线路）</div><div class="u"><span class="av">赵</span><span>赵六（线路）</span></div></div>
+            <div class="page">
+              <div class="bar"><span class="btn dim">刷新</span><span class="btn suc">新单提醒</span></div>
+              <table class="tb2">
+                <tr><th>订单号</th><th>路线</th><th>金额</th><th>找车类型</th><th>状态</th><th>操作</th></tr>
+                <tr><td>20260907001</td><td>德州→聊城</td><td>¥1,200.00</td><td>配车</td><td><span class="mini w">待处理</span></td><td><span class="mini i">确认接单</span></td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:78%;top:58%"><span class="n">1</span><span class="t">点「确认接单」</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「我的订单（线路）」页面，说明“线路确认后才会进入调度配车”。</div>
+  </section>
+
+  <!-- 12 调度配车 -->
+  <section class="step" id="s12">
+    <div class="step-head"><span class="step-badge">第 12 步</span><h3>调度配车 / 派司机</h3></div>
+    <div class="step-desc">
+      <p>线路确认后，<b>调度</b>在「我的订单」看到“待配车”的单，选择<b>车辆</b>和<b>司机</b>指派。</p>
+      <div class="blk">配好后订单进入“调度已确认”，司机就在司机端收到任务。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/order/carfim?id=1001</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi on"><span class="k"></span>我的订单</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">调度配车</div><div class="u"><span class="av">钱</span><span>钱七（调度）</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:640px"><div class="panel-h">指派车辆/司机 · 订单 20260907001</div><div class="panel-b">
+                <form class="fz">
+                  <div class="fg"><label>车辆:</label><div class="inp"><select><option>鲁P·12345（4.2m 箱式）</option><option>鲁P·67890（6.8m 高栏）</option></select></div></div>
+                  <div class="fg"><label>司机:</label><div class="inp"><select><option>孙师傅 138****3333</option><option>周师傅 139****6666</option></select></div></div>
+                  <div class="fg"><label>司机运费:</label><div class="inp"><input type="text" value="800.00"></div></div>
+                  <div class="okbar"><span class="btn pri">确认指派</span></div>
+                </form>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:30%;top:52%"><span class="n">1</span><span class="t">选车 + 选司机，确认指派</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「调度配车/指派」页，含“车辆、司机、运费”字段。</div>
+  </section>
+
+  <!-- 13 司机送货 -->
+  <section class="step" id="s13">
+    <div class="step-head"><span class="step-badge">第 13 步</span><h3>司机端送货</h3></div>
+    <div class="step-desc">
+      <p>司机通过<b>司机端 APP</b> 接到任务，依次更新：<b>接单 → 装货 → 在途 → 卸货</b>。后台「物流轨迹」页可随时查看进度。</p>
+      <div class="blk">司机端是独立小程序，你主要在后台看轨迹、处理异常即可。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">司机端 · 订单详情</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·司机端</div>
+            <div class="menu">
+              <div class="mi on"><span class="k"></span>待执行</div>
+              <div class="mi"><span class="k"></span>进行中</div>
+              <div class="mi"><span class="k"></span>已完成</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">订单 20260907001</div><div class="u"><span class="av">孙</span><span>孙师傅</span></div></div>
+            <div class="page">
+              <div class="panel"><div class="panel-h">运输任务</div><div class="panel-b">
+                <div style="font-size:12px">
+                  <div>德州·平原县 → 聊城·东昌府</div>
+                  <div>货物：机械配件 / 2吨 / 4.2m箱式</div>
+                  <div style="margin-top:8px"><b>去装货</b> <span class="muted">起运前操作</span></div>
+                  <div><b>运输中</b> <span class="muted">在途状态</span></div>
+                  <div><b>已送达</b> <span class="muted">卸货后确认</span></div>
+                </div>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:6%;top:74%"><span class="n">1</span><span class="t">司机按「装货→在途→送达」更新</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截司机端的步骤条，或后台「物流轨迹」页，说明司机端与后台联动。</div>
+  </section>
+
+  <!-- 14 确认完成 -->
+  <section class="step" id="s14">
+    <div class="step-head"><span class="step-badge">第 14 步</span><h3>订单完成：司机完成 / 后台确认收货</h3></div>
+    <div class="step-desc">
+      <p>订单完成有两条通路：<b>司机端确认完成</b>，或（无送货司机的单）后台点「<b>确认收货 / 专车到达</b>」。这一步会<b>触发系统自动扣抽佣</b>。</p>
+      <div class="blk">别漏确认，也别乱确认——订单一完成，就按总运费 × 比例从你钱包扣费。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/order/view?id=1001（已送达）</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi on"><span class="k"></span>订单管理</div>
+              <div class="mi"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">订单详情 20260907001</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="alert i">司机已确认送达，请核对后完成订单。（完成后按 1% 自动扣抽佣 ¥12.00）</div>
+              <div class="panel"><div class="panel-h">确认信息</div><div class="panel-b" style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12px">
+                <div><b>总运费：</b><span class="red">¥1,200.00</span></div><div><b>本次抽佣：</b>¥12.00（1%）</div>
+                <div><b>司机：</b>孙师傅</div><div><b>是否已发工资：</b>未发</div>
+              </div></div>
+              <div class="bar" style="margin-top:12px"><span class="btn suc">确认收货 / 专车到达</span><span class="btn dan">驳回</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:8%;top:80%"><span class="n">1</span><span class="t">点「确认收货/专车到达」→ 订单完成并扣费</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>这一步务必截图，附一句“完成后系统自动按比例扣除抽佣”。</div>
+  </section>
+
+  <!-- 15 抽佣明细 -->
+  <section class="step" id="s15">
+    <div class="step-head"><span class="step-badge">第 15 步</span><h3>对账：抽佣明细</h3></div>
+    <div class="step-desc">
+      <p>订单完成后系统会自动扣抽佣。在「加盟商管理 → <b>抽佣明细</b>」可按日期查每单扣了多少，方便和客户对账。</p>
+      <div class="blk">扣费规则：一级按总运费×1%；二级按×1.5%，同时其上级一级再扣×1%。同一单对同一加盟商只扣一次。</div>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/commdetail?startdate=&amp;enddate=</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi on"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">抽佣明细</div><div class="u"><span class="av">张</span><span>张三</span></div></div>
+            <div class="page">
+              <div class="bar"><span class="btn dim">起 <input type="text" style="width:90px"></span><span class="btn dim">止 <input type="text" style="width:90px"></span><span class="btn pri">查询</span></div>
+              <table class="tb2">
+                <tr><th>ID</th><th>加盟商</th><th>抽佣金额</th><th>订单号</th><th>备注</th><th>扣后余额</th><th>抽佣时间</th></tr>
+                <tr><td>98</td><td>张三（一级）</td><td class="red">-12.00</td><td>20260907002</td><td>订单完成抽佣 1%</td><td>2,350.00</td><td>09-07 15:10</td></tr>
+                <tr><td>97</td><td>李四（二级）</td><td class="red">-12.90</td><td>20260907001</td><td>订单完成抽佣 1.5%</td><td>787.00</td><td>09-07 14:30</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:2px;top:150px"><span class="n">1</span><span class="t">看每单抽佣，便于对账</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>截「抽佣明细」页，作为月度对账图。</div>
+  </section>
+
+  <!-- 16 全局设置 -->
+  <section class="step" id="s16">
+    <div class="step-head"><span class="step-badge">第 16 步</span><h3>全局费用设置（仅总部）</h3></div>
+    <div class="step-desc">
+      <p>总部在「加盟商管理 → <b>全局设置</b>」统一设定全加盟商共用的费用标准。</p>
+      <ul><li><b>改会员月费</b>：默认 150 元/月（设为正式员工免费）。</li><li><b>新增二级扣费</b>：默认 500 元。</li><li><b>加盟商月费</b>：默认 1000 元/月（每月自动从钱包扣，0=不扣）。</li><li><b>规则模板加盟商</b>：新加盟商按哪个模板生成菜单权限。</li></ul>
+    </div>
+    <div class="browser">
+      <div class="bbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">…/franchise/config</span></div>
+      <div class="shot">
+        <div class="app">
+          <div class="sb">
+            <div class="brand">龙哲物流·平台</div>
+            <div class="menu">
+              <div class="mi"><span class="k"></span>首页</div>
+              <div class="mi"><span class="k"></span>会员管理</div>
+              <div class="mi"><span class="k"></span>订单管理</div>
+              <div class="mi on"><span class="k"></span>加盟商管理</div>
+            </div>
+          </div>
+          <div class="main">
+            <div class="tb"><div class="logo">加盟商全局设置</div><div class="u"><span class="av">总</span><span>总部</span></div></div>
+            <div class="page">
+              <div class="panel" style="max-width:620px"><div class="panel-h">加盟商全局设置</div><div class="panel-b">
+                <form class="fz">
+                  <div class="fg"><label>改会员月费:</label><div class="inp"><input type="text" value="150.00"><div class="help">全加盟商共用，总部统一设置</div></div></div>
+                  <div class="fg"><label>新增二级扣费:</label><div class="inp"><input type="text" value="500.00"><div class="help">全加盟商共用，总部统一设置</div></div></div>
+                  <div class="fg"><label>加盟商月费:</label><div class="inp"><input type="text" value="1000.00"><div class="help">每个正常加盟商每月自动从钱包扣（0=不扣）</div></div></div>
+                  <div class="fg"><label>规则模板:</label><div class="inp"><select><option>自动（取最小的一级加盟商）</option></select></div></div>
+                  <div class="okbar"><span class="btn pri">保 存</span></div>
+                </form>
+              </div></div>
+            </div>
+          </div>
+        </div>
+        <div class="ann" style="left:30%;top:53%"><span class="n">1</span><span class="t">总部统一设置，全加盟商共用</span></div>
+      </div>
+    </div>
+    <div class="tip"><b>【截屏提示】</b>此页仅总部有权限；截图用于说明“费用由总部统一控制”。</div>
+  </section>
+
+  <div class="foot">图文版示意图依据系统真实菜单与字段绘制，便于新人理解。正式培训请以实际后台截图为准；本页可直接打印或导入演示。</div>
+</div>
+</body>
+</html>

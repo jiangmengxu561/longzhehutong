@@ -1,0 +1,30 @@
+<?php
+
+return [
+    'Id'                    => 'ID',
+    'User_id'               => '操作用户ID',
+    'Mobile'                => '手机号',
+    'Loading_address'       => '发货地',
+    'Unload_address'        => '卸货地',
+    'Weight'                => '重量(吨)',
+    'Direction'             => '方位/体积(立方米)',
+    'Car_type_id'           => '车型ID',
+    'Goods_type_id'         => '货物类型ID',
+    'Logistics_id'          => '物流专线ID',
+    'Quoted_price'          => '报价',
+    'Pay_price'             => '系统应付价',
+    'Cost_cont'             => '总成本',
+    'Profit'                => '利润',
+    'System_profit'         => '系统利润',
+    'Logistics_cost'        => '专线物流费',
+    'Logistics_driver_cost' => '专线司机成本',
+    'Pickup_fee'            => '取货费',
+    'Pickup_driver_fee'     => '取货司机费',
+    'Shipment_fee'          => '送货费',
+    'Shipment_driver_fee'   => '送货司机费',
+    'Pickup_distance'       => '取货距离(km)',
+    'Logistics_distance'    => '专线距离(km)',
+    'Shipmenty_distance'    => '送货距离(km)',
+    'Createtime'            => '创建时间',
+    'Is_chaxun'             => '是否返回'
+];

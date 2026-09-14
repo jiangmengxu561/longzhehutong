@@ -1,0 +1,99 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <!-- 基本信息，只读展示 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">记账ID:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$row.bookkeeping_id|htmlentities}</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">操作类型:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$typeText|default=''}</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Admin_name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$row.admin_name|htmlentities}</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Createtime')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{:date('Y-m-d H:i:s', $row.createtime)}</p>
+        </div>
+    </div>
+
+    <!-- 差异明细 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">字段变更明细:</label>
+        <div class="col-xs-12 col-sm-8">
+            {if $row.type == 'del'}
+            <p class="form-control-static text-danger">该操作将删除记账记录 #{$row.bookkeeping_id}，删除后不可恢复！</p>
+            {elseif $diffList}
+            <table class="table table-bordered table-striped table-diff-detail">
+                <thead>
+                <tr>
+                    <th style="width: 22%; min-width: 100px;">字段</th>
+                    <th style="width: 39%;">修改前</th>
+                    <th style="width: 39%;">修改后</th>
+                </tr>
+                </thead>
+                <tbody>
+                {foreach $diffList as $diff}
+                <tr>
+                    <td>{$diff.label|htmlentities}</td>
+                    <td class="diff-value-cell">{$diff.oldValue|htmlentities}</td>
+                    <td class="diff-value-cell">{$diff.newValue|htmlentities}</td>
+                </tr>
+                {/foreach}
+                </tbody>
+            </table>
+            {else/}
+            <p class="form-control-static text-muted">未检测到字段差异</p>
+            {/if}
+        </div>
+    </div>
+
+    <!-- 审核信息 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">当前审核状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            {switch name="row.audit_status"}
+            {case value="1"}<span class="label label-success">已通过</span>{/case}
+            {case value="2"}<span class="label label-danger">已拒绝</span>{/case}
+            {default /}<span class="label label-warning">待审核</span>
+            {/switch}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">审核操作:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select name="row[audit_status]" id="c-audit_status" class="form-control">
+                <option value="0" {if $row.audit_status==0}selected{/if}>待审核</option>
+                <option value="1" {if $row.audit_status==1}selected{/if}>通过</option>
+                <option value="2" {if $row.audit_status==2}selected{/if}>拒绝</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">审核备注:</label>
+        <div class="col-xs-12 col-sm-8">
+            <textarea class="form-control" rows="3" name="row[audit_remark]" id="c-audit_remark">{$row.audit_remark|htmlentities}</textarea>
+        </div>
+    </div>
+
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed">{:__('OK')}</button>
+        </div>
+    </div>
+</form>
+<style>
+    .table-diff-detail th, .table-diff-detail td { vertical-align: middle !important; }
+</style>

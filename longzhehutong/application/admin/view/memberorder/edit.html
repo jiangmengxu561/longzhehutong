@@ -1,0 +1,117 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Order_no')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-order_no" data-rule="required" class="form-control" name="row[order_no]" type="text" value="{$row.order_no|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('User_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-user_id" data-rule="required" min="0" data-source="user/user/index" data-field="nickname" class="form-control selectpage" name="row[user_id]" type="text" value="{$row.user_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Franchise_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-franchise_id" data-rule="required" min="0" data-source="franchise/index" class="form-control selectpage" name="row[franchise_id]" type="text" value="{$row.franchise_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Package_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-package_id" data-rule="required" min="0" data-source="package/index" class="form-control selectpage" name="row[package_id]" type="text" value="{$row.package_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Package_name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-package_name" data-rule="required" class="form-control" name="row[package_name]" type="text" value="{$row.package_name|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Membertype_before')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-membertype_before" data-rule="required" min="0" class="form-control" name="row[membertype_before]" type="number" value="{$row.membertype_before|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Membertype_after')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-membertype_after" data-rule="required" min="0" class="form-control selectpicker" name="row[membertype_after]">
+                {foreach name="membertypeAfterList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.membertype_after"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Member_duration')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-member_duration" data-rule="required" min="0" class="form-control" name="row[member_duration]" type="number" value="{$row.member_duration|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Member_unit')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-member_unit" data-rule="required" class="form-control selectpicker" name="row[member_unit]">
+                {foreach name="memberUnitList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.member_unit"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Price')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-price" data-rule="required" class="form-control" step="0.01" name="row[price]" type="number" value="{$row.price|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pay_type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pay_type" data-rule="required" class="form-control" name="row[pay_type]" type="text" value="{$row.pay_type|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pay_status')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pay_status" data-rule="required" class="form-control" name="row[pay_status]" type="number" value="{$row.pay_status|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pay_time')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pay_time" min="0" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" data-use-current="true" name="row[pay_time]" type="text" value="{:$row.pay_time?datetime($row.pay_time):''}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Expiry_before')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-expiry_before" class="form-control" name="row[expiry_before]" type="number" value="{$row.expiry_before|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Expiry_after')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-expiry_after" class="form-control" name="row[expiry_after]" type="number" value="{$row.expiry_after|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Remark')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-remark" data-rule="required" class="form-control" name="row[remark]" type="text" value="{$row.remark|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的订单 · 按钮全解（线路 / 调度）</title>
+<style>
+  :root{--red:#e74c3c;--bord:#d2d6de;--txt:#333;--blue:#3c8dbc;--side:#2c5f8a;--green:#00a65a;--warnc:#f39c12}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f6f9;color:var(--txt);font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;line-height:1.66}
+  .wrap{max-width:1220px;margin:0 auto;padding:22px 18px 70px}
+  h1{font-size:25px;margin:6px 0 4px}
+  .lead{color:#666;margin:0 0 18px}
+  .toc{position:sticky;top:0;z-index:60;background:#fff;border:1px solid var(--bord);border-radius:8px;padding:10px 14px;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .toc a{margin:2px 7px;color:#337ab7;text-decoration:none;font-size:13px;white-space:nowrap;display:inline-block}
+  .role{background:#eef3fa;border:1px solid #cfe0f3;border-left:5px solid var(--blue);border-radius:8px;padding:10px 16px;margin:28px 0 14px;font-size:16px;font-weight:700;color:var(--side)}
+  .role small{font-weight:400;color:#5a7c9b}
+  .grp{background:#f0f4f8;border:1px solid #dce6f0;border-radius:8px;padding:8px 14px;margin:18px 0 8px;font-size:15px;font-weight:700;color:#2a506f}
+  .card{background:#fff;border:1px solid var(--bord);border-radius:8px;margin-bottom:14px;overflow:hidden}
+  .bhead{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fafafa;border-bottom:1px solid #eee;border-left:4px solid var(--blue)}
+  .bhead .nm{font-size:15px;font-weight:700;color:#222}
+  .who{display:inline-block;margin-left:auto;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+  .who.line{background:#e6f5ff;color:#0b6fb8}.who.dispatch{background:#e8f8ec;color:#1a7f3c}.who.both{background:#f0f0f0;color:#666}
+  .bhead .grp-tag{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+  .tag.top{background:#ffe;color:#a5650a}.tag.print{background:#f3e8ff;color:#7a3bbf}.tag.more{background:#e9f7f7;color:#0f766e}
+  .bbody{padding:10px 16px;font-size:13.5px}
+  .bbody p{margin:4px 0}
+  .bbody .do{border-left:3px solid var(--green);padding-left:8px;margin:6px 0;color:#2e7d32}
+  .bbody .no{border-left:3px solid var(--red);padding-left:8px;margin:6px 0;color:#c0392b}
+  .bbody .when{border-left:3px solid var(--warnc);padding-left:8px;margin:6px 0;color:#8a6d3b}
+  .warn{background:#fdecea;border:1px solid #f5c6c1;border-left:4px solid var(--red);padding:10px 14px;margin:12px 0;border-radius:5px;font-size:13px;color:#a23c30}
+  .warn b{color:#c0392b}
+  .tip{background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #ffb300;padding:10px 14px;margin:12px 0;border-radius:5px;font-size:13px;color:#7a5d00}
+  .tip b{color:#b8860b}
+  .foot{text-align:center;color:#999;font-size:12px;padding-top:20px;border-top:1px solid #eee;margin-top:24px}
+  @media(max-width:720px){.bhead{flex-wrap:wrap}.who{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>「我的订单」按钮全解（线路 / 调度）</h1>
+  <p class="lead">把「我的订单」里你能看到的所有按钮逐个讲清楚。按钮分三处出现：<b>① 操作列直接显示</b>、<b>② 「打印」下拉</b>、<b>③ 「更多」下拉</b>。同一单可用的按钮会随<b>找车类型</b>（配车/专车/小票快运）和<b>订单状态</b>变化——某个按钮没出现不是丢了，是该状态不该显示。</p>
+
+  <div class="toc">
+    <a href="#note">◆ 先看</a>
+    <a href="#both">◆ 两者都能用的</a>
+    <a href="#line">■ 线路专属</a>
+    <a href="#dispatch">■ 调度专属</a>
+    <a href="#more">◆ 「更多」里每一项</a>
+  </div>
+
+  <!-- 说明 -->
+  <div class="role" id="note">🧭 先说清楚：按钮是怎么分出来的</div>
+  <div class="card">
+    <div class="bbody">
+      <p><b>标签说明：</b></p>
+      <p><span class="tag top">顶部按钮</span> = 点单直接在「操作」列看到；<span class="tag print">「打印」</span> = 点「打印」按钮展开；<span class="tag more">「更多」</span> = 点「更多」按钮展开。</p>
+      <p><span class="who both">两者都能</span><span class="who line">线路</span><span class="who dispatch">调度</span> = 这个按钮平时是哪个角色在用。</p>
+      <p><b>判断一个单（正常流程）：</b></p>
+      <ol style="margin:6px 0 0;padding-left:22px">
+        <li>看「<b>找车类型</b>」：配车 → 线路确认后交调度；专车/小票快运 → 线路填金额。</li>
+        <li>看「<b>支付状态 / 物流状态</b>」：待付款 / 待处理 → 要先处理；已完成 / 已收货 → 操作基本锁住。</li>
+        <li>看「<b>是否已驳回</b>」（已驳回）→ 只能看信息/轨迹，其他按钮全隐藏。</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 通用 -->
+  <div class="role" id="both">🧰 线路、调度都能用的按钮（操作列直接显示）</div>
+  <div class="card">
+    <div class="bhead"><span class="nm">取消（取消订单）</span><span class="who both">两者都能</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>未完成、未取消</b>的订单。</p>
+      <p>整单作废。客户不要了才点。</p>
+      <p class="no"><b>注意：</b>如果已经派了车/司机，先取消司机/专线订单，不然会有损失或纠纷。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">驳回（让客户改信息）</span><span class="who both">两者都能</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>未收货、未驳回</b>的订单。</p>
+      <p>订单信息里客户填错了（地址/数量/重量/尺寸/货物类型/车型/总运费等），点「驳回」后<b>可指定“只允许客户修改哪一项”</b>并<b>填驳回原因</b>，客户改完重新提交。</p>
+      <p class="no"><b>注意：</b>驳回后（已驳回）订单会锁住大部分操作，只能「查看订单信息 / 查看物流轨迹」。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">查看订单信息</span><span class="who both">两者都能</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p>看这单的完整详情（地址、货物、金额、车型、时效、司机等）。<b>线路看它核对</b>，<b>调度看它派车派司机。</b></p>
+      <p class="do"><b>用法：</b>几乎每单第一步都先点它把关。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">送货（标记为送货 / 取消送货）</span><span class="who both">两者都能</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p class="when">「送货」：<b>还没送货、未收货</b>时显示；「取消送货」：已经标记送货时才显示。</p>
+      <p>标记这单需要<b>送货</b>。注意提示：<b>月结</b>货物送货完成后，会从<b>调度备用金</b>扣掉全部订单运费；非月结则只按规则扣。</p>
+      <p class="no"><b>注意：</b>确认“月结送货”会动到备用金，确定已在负责再点。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bhead"><span class="nm">打印（下拉：托运单模板 / 签收单模板）</span><span class="who both">两者都能</span><span class="tag print">「打印」</span></div>
+    <div class="bbody">
+      <p>打印纸质单证：<b>托运单模板</b>（针式底图，随车）、<b>签收单模板</b>（和前端签收单一致，给收货方签字）。</p>
+      <p class="do"><b>用法：</b>安排车前/送达时打印给司机和客户。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bhead"><span class="nm">查看物流轨迹</span><span class="who both">两者都能</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p>看这单的物流轨迹：装货、运输、到达、派送等节点。跟进度、处理异常都用它。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bhead"><span class="nm">上传图片 / 上传装货现场照片</span><span class="who both">两者都能</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p>上传这单的照片：<b>装货现场、货物、签收、运单</b>等，留证据、方便对账和追责。</p>
+      <p class="do"><b>用法：</b>装货后、送达后拍照上传。</p>
+    </div>
+  </div>
+
+  <!-- 线路专属 -->
+  <div class="role" id="line">🎯 线路（销售）专属按钮</div>
+  <div class="card">
+    <div class="bhead"><span class="nm">配车确定订单</span><span class="who line">线路</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>找车类型=配车</b>、<b>你是线路</b>、<b>还没确认过</b>。</p>
+      <p>确认这单是配车单，确认后订单<b>交到调度</b>去安排车辆和司机。</p>
+      <p class="no"><b>注意：</b>确认前一定要核对地址/货/金额，确认后就轮到调度了。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">专车 / 小票快运确定订单</span><span class="who line">线路</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>找车类型=专车或小票快运</b>、<b>你是线路</b>、<b>未确认</b>。</p>
+      <p>确认时弹窗让你<b>输入订单金额（总运费）</b>，填好确定后订单标记为「<b>已出价</b>」。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">重新报价</span><span class="who line">线路</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是线路</b>、<b>未收货</b>、<b>已确认过</b>。</p>
+      <p>已确认但金额谈变了 → 填<b>新金额</b>重新确认。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">填写订单信息（专车/小票快运信息）</span><span class="who line">线路</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是线路</b>，按订单类型（专车/小票快运）显示。</p>
+      <p>补充专车/快运的车辆、司机、价格等字段（司机姓名/电话/价格必填），把承运信息填完整。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">查看路线</span><span class="who line">线路</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是线路</b>，配车单。</p>
+      <p>看这条线路/路线的成本与规划，用于判断这单成本。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">修改线路成本</span><span class="who line">线路</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是线路</b>、<b>找车类型=配车</b>、<b>物流状态 &lt; 4（未进入运输）</b>。</p>
+      <p>填/改<b>这单的线路成本（干线成本）</b>，用于算利润。可填备注说明原因。</p>
+      <p class="no"><b>注意：</b>专车/小票快运不显示；已运输后（状态≥4）也不显示，要改找管理员。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">填写取货司机 / 司机成本</span><span class="who line">线路</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是线路</b>（调度不显示），按订单类型/状态出现司机相关表单。</p>
+      <p>填<b>取货司机</b>的姓名/电话/价格（部分会带货运平台税点）、或<b>司机成本/单价/其他价</b>等明细。</p>
+    </div>
+  </div>
+
+  <!-- 调度专属 -->
+  <div class="role" id="dispatch">🚚 调度专属按钮</div>
+  <div class="card">
+    <div class="bhead"><span class="nm">展示收款码 / 展示收款账号</span><span class="who dispatch">调度</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是调度</b>。</p>
+      <p>要收客户钱时，点它弹出<b>收款方式列表</b>，选收款方式（二维码 / 其它），把收款方式给客户。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">确认已收款（收款流程里）</span><span class="who dispatch">调度</span><span class="tag top">顶部</span></div>
+    <div class="bbody">
+      <p>在「展示收款码 → 选收款方式 → <b>确定</b>」这步触发。点确定前系统会问“确认款项已经实际到账”，选「确认已收款」。</p>
+      <p class="no"><b>纪律：</b>只有钱确实到账才确认，否则会出坏账。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">专线确认到达</span><span class="who dispatch">调度</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是调度</b>、<b>已完成专线前</b>（专线状态≠2）。</p>
+      <p>专线运单送到了 → 点它，系统问“<b>是否已扣专线费？</b>”：<b>是</b>=已扣，走备用金扣干线费；<b>否</b>=沿用原扣费逻辑（填送货司机时扣）。</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="bhead"><span class="nm">信息费确认打款</span><span class="who dispatch">调度</span><span class="tag more">「更多」</span></div>
+    <div class="bbody">
+      <p class="when">出现：<b>你是调度</b>、<b>该单有信息费/额外费用</b>且未打款。</p>
+      <p>给信息部/司机付<b>信息费、回单费、拆包费、定金</b>等。点开先看<b>金额和备用金余额</b>，再确认打款。</p>
+      <p class="no"><b>注意：</b>余额不够会失败；先看金额对不对。</p>
+    </div>
+  </div>
+
+  <!-- 更多汇总 -->
+  <div class="role" id="more">📦 「更多」下拉里还可能出现的（线路/调度按状态显示）</div>
+  <div class="card">
+    <div class="bbody">
+      <p>这些按<b>订单类型和状态</b>出现，主要和<b>成本、费用、取消</b>有关：</p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
+        <tr style="background:#f0f4f8"><th style="border:1px solid #e2e8ef;padding:6px 8px;text-align:left">按钮</th><th style="border:1px solid #e2e8ef;padding:6px 8px;text-align:left">干什么</th></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">修改订单总运费</td><td style="border:1px solid #e6e9ed;padding:6px 8px">改这单的总运费（线路常用）。</td></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">修改订单成本</td><td style="border:1px solid #e6e9ed;padding:6px 8px">填整单成本，用于算利润。</td></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">填写杂费</td><td style="border:1px solid #e6e9ed;padding:6px 8px">回单费、拆包费、定金等额外费用（调度多）。</td></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">填写回单寄回单号</td><td style="border:1px solid #e6e9ed;padding:6px 8px">回单要寄回时，填快递名+单号（仅回单方式=寄回时显示）。</td></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">取消司机订单</td><td style="border:1px solid #e6e9ed;padding:6px 8px">撤掉某个司机（取货/送货）的单，先确认再改派。</td></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">取消专线订单</td><td style="border:1px solid #e6e9ed;padding:6px 8px">撤掉专线承运单。</td></tr>
+        <tr><td style="border:1px solid #e6e9ed;padding:6px 8px">下载文件</td><td style="border:1px solid #e6e9ed;padding:6px 8px">下载该单相关文件/单据。</td></tr>
+      </table>
+      <p class="tip" style="margin-top:10px"><b>记不住没关系：</b>用不到就看灰色的、或一个都别乱点。做之前先想：<b>这单现在到了哪一步（已下单/派车/运输/到达/收货）</b>，只点和那一步对应的按钮。</p>
+    </div>
+  </div>
+
+  <div class="warn"><b>安全底线：</b>① 已驳回的订单只能看，别乱点。② 金额/成本别随便改，改了要能说明白。③ “确认已收款”“信息费打款”“月结送货”都动钱，确认清楚再点。</div>
+
+  <div class="foot">「我的订单」按钮全解 · 依据后台实际界面与系统逻辑整理 · 具体按钮以订单当前类型/状态为准</div>
+</div>
+</body>
+</html>

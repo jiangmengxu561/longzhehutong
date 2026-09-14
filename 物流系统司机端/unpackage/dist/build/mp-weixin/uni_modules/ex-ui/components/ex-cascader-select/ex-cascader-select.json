@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "ex-icon": "/uni_modules/ex-ui/components/ex-icon/ex-icon"
+  },
+  "component": true
+}

@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "首页",
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "xzw-notice": "/uni_modules/xzw-notice/components/xzw-notice/xzw-notice",
+    "uni-popup": "/uni_modules/uni-popup/components/uni-popup/uni-popup",
+    "l-picker": "/uni_modules/lime-picker/components/l-picker/l-picker",
+    "l-picker-item": "/uni_modules/lime-picker/components/l-picker-item/l-picker-item"
+  }
+}

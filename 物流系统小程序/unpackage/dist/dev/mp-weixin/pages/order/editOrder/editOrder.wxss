@@ -1,0 +1,8 @@
+
+.content.data-v-d0603fe2 { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #F7F8FA;
+}
+.loading-wrap.data-v-d0603fe2 { text-align: center;
+}
+.loading-tip.data-v-d0603fe2 { font-size: 28rpx; color: #666;
+}
+

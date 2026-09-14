@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "物流轨迹",
+  "usingComponents": {
+    "zfl-logistics": "/uni_modules/zfl-logistics/components/zfl-logistics/zfl-logistics"
+  }
+}

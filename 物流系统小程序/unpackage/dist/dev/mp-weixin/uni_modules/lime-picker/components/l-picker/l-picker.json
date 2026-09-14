@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "l-picker-item": "/uni_modules/lime-picker/components/l-picker-item/l-picker-item",
+    "l-loading": "/uni_modules/lime-loading/components/l-loading/l-loading"
+  }
+}

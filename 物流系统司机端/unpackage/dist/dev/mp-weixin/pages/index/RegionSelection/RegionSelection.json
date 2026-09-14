@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "地区选择",
+  "usingComponents": {
+    "ex-cascader-select": "/uni_modules/ex-ui/components/ex-cascader-select/ex-cascader-select"
+  }
+}

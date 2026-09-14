@@ -1,0 +1,91 @@
+<div class="panel panel-default panel-intro">
+    <div class="panel-heading">
+        <h3 class="panel-title">订单【{$orderNumber|default=''}】物流轨迹</h3>
+    </div>
+    <div class="panel-body">
+        <div class="well well-sm">
+            <p><strong>订单编号：</strong>{$order.orderid|default=''}</p>
+            <p><strong>下单用户：</strong>{$order.username|default=''}（{$order.mobile|default=''}）</p>
+            <p><strong>起始地址：</strong>{$order.loading|default=''}</p>
+            <p><strong>收货地址：</strong>{$order.unload|default=''}</p>
+        </div>
+        <a class="kdniao" data-company="ZTO" data-code="78967775465787"></a>
+        <!-- 专线基础信息（来自 logistics 表） -->
+        <h4>专线信息</h4>
+        {if empty($logisticsInfo)}
+        <div class="alert alert-warning">
+            暂未匹配到专线信息。
+        </div>
+        {else/}
+        <table class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th style="width: 180px;">物流园名称</th>
+                <th style="width: 220px;">起点地址</th>
+                <th style="width: 160px;">起点电话</th>
+                <th style="width: 220px;">终点地址</th>
+                <th style="width: 160px;">终点电话</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{$logisticsInfo.shipping_logistics_name|default=''}</td>
+                <td>{$logisticsInfo.shipping_logistics_address|default=''}</td>
+                <td>{$logisticsInfo.shipping_logistics_mobile|default=''}</td>
+                <td>{$logisticsInfo.arrival_logistics_address|default=''}</td>
+                <td>{$logisticsInfo.arrival_logistics_mobile|default=''}</td>
+            </tr>
+            </tbody>
+        </table>
+        {/if}
+
+        <!-- 轨迹记录（来自 trajectory 表） -->
+        <h4>轨迹记录</h4>
+        {if empty($trajectoryList)}
+        <div class="alert alert-info">
+            暂无轨迹记录。
+        </div>
+        {else/}
+        <table class="table table-striped table-bordered">
+            <thead>
+            <tr>
+                <th style="width: 200px;">时间</th>
+                <th style="width: 260px;">内容</th>
+                <th style="width: 200px;">操作人</th>
+                <th style="width: 160px;">联系电话</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach name="trajectoryList" item="vo"}
+            <tr>
+                <td>{$vo.createtime|date='Y-m-d H:i:s',###}</td>
+                <td>{$vo.type|default=''}</td>
+                <td>{$vo.admin_name|default=''}</td>
+                <td>{$vo.admin_mobile|default=''}</td>
+            </tr>
+            {/foreach}
+            </tbody>
+        </table>
+        {/if}
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

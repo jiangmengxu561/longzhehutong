@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>托运单打印</title>
+    <style>
+        @media print {
+            body {
+                margin: 0;
+            }
+        }
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .page {
+            position: relative;
+            width: 240mm;      /* 按你实际纸张宽度调 */
+            height: 140mm;     /* 按实际高度调 */
+            background: url("/assets/img/qwwer.jpg") no-repeat left top;
+            background-size: 100% 100%;
+            font-family: "SimSun", "宋体", Arial, sans-serif;
+            font-size: 20px;   /* 字体整体调大 */
+        }
+        .field {
+            position: absolute;
+            white-space: nowrap;
+        }
+
+        /* 下面这些坐标需要你自己用尺子 & 打印效果微调 */
+        .sender-name   { top: 25mm; left: 47mm; }
+        .sender-phone  { top: 35mm; left: 47mm; }
+        .sender-addr   { top: 45mm; left: 47mm; width: 90mm; white-space: normal; word-break: break-all; }
+
+        .recv-name     { top: 25mm; left: 170mm; }
+        .recv-phone    { top: 35mm; left: 170mm; }
+        .recv-addr     { top: 45mm; left: 170mm; width: 230mm; }
+
+        .goods-name    { top: 65mm; left: 25mm; }
+        .goods-pack    { top: 65mm; left: 55mm; }
+        .goods-quantity    { top: 65mm; left: 82mm; }
+        .goods-weight  { top: 65mm; left: 95mm; }
+        .goods-volume  { top: 65mm; left: 115mm; }
+
+        /*.car-type      { top: 75mm; left: 35mm; }*/
+
+        .amount-total  { top: 120mm; left: 225mm; }
+        .cod-amount    { top: 90mm; left: 150mm; }
+        .cod-break     { top: 65mm; left: 220mm; }
+        .order-no      { top: 5mm; left: 115mm; }
+
+        /* …按你纸上的每个格子继续加 class 即可… */
+    </style>
+</head>
+<body onload="window.print();">
+<div class="page">
+
+    <!-- 订单号 -->
+    <div class="field order-no" >
+      订单号:  {$order.orderid|default=''}
+    </div>
+
+    <!-- 发货人 -->
+    <div class="field sender-name">
+        {$unloadAddress.user_name|default=''}
+    </div>
+    <div class="field sender-phone">
+        {$unloadAddress.mobile|default=''}
+    </div>
+    <div class="field sender-addr">
+        {$unloadAddress.detailed_address|default=''}
+    </div>
+
+    <!-- 收货人 -->
+    <div class="field recv-name">
+        {$loadingAddress.user_name|default=''}
+
+    </div>
+    <div class="field recv-phone">
+        {$loadingAddress.mobile|default=''}
+
+    </div>
+    <div class="field recv-addr">
+        {$loadingAddress.address|default=''}
+
+    </div>
+
+    <!-- 货物信息 -->
+    <div class="field goods-name">
+        {$order.goods_name|default=''}
+    </div>
+    <div class="field goods-pack">
+        {$order.packaging_name|default=''}
+    </div>
+    <div class="field goods-quantity">
+        {$order.quantity|default=''}
+    </div>
+                                                                                    
+    <div class="field goods-weight">
+        {$order.weight|default=''}
+    </div>
+    <div class="field goods-volume">
+        {$order.direction|default=''}
+    </div>
+
+<!--    &lt;!&ndash; 车型 &ndash;&gt;-->
+<!--    <div class="field car-type">-->
+<!--        {$order.car_type_name|default=''}-->
+<!--    </div>-->
+
+    <!-- 金额 / 代收货款 -->
+    <div class="field amount-total">
+        {$order.pay_price|default='0.00'}
+    </div>
+<!--    <div class="field cod-amount">-->
+<!--        {$charge.amount|default=''}-->
+<!--    </div>-->
+    <div class="field cod-break">
+        {$charge.break|default=''}
+    </div>
+
+</div>
+</body>
+</html>

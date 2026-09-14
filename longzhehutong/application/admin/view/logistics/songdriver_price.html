@@ -1,0 +1,388 @@
+<form id="logisticsForm" role="form" autocomplete="off" method="post">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">司机成本设置</h4>
+        </div>
+        <div class="panel-body">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">送货司机成本</h5>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="control-label">司机姓名</label>
+                                <input id="deliveryDriverName" name="delivery_driver_name" type="text" class="form-control"
+                                       placeholder="请输入发货司机姓名" value = '{$row.delivery_driver_name}' required />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">司机电话</label>
+                                <input id="deliveryDriverPhone" name="delivery_driver_phone" type="tel" class="form-control"
+                                       placeholder="请输入发货司机电话"  value = '{$row.delivery_driver_phone}' required />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">货运平台</label>
+                                <select id="deliveryDriverType" name="d_type" class="form-control">
+                                    <option value="">请选择货运平台</option>
+                                    <option value="1" {if condition="$row.delivery_d_type eq '1'"}selected{/if}>运满满</option>
+                                    <option value="2" {if condition="$row.delivery_d_type eq '2'"}selected{/if}>货拉拉</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                {if condition="$order_ments_id eq 1"}
+                                <label class="control-label">车牌号</label>
+                                <input id="deliveryCarNumber" name="car_number" type="text" class="form-control"
+                                       placeholder="请输入送货车辆车牌号" value="{$row.car_number|default=''}" />
+                                {/if}
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">成本金额 (元)</label>
+                                <div class="input-group">
+                                    <input id="deliveryDriverCost" name="delivery_driver_cost" type="text" class="form-control"
+                                           value="{$row.delivery_driver_price|number_format=2}" />
+                                    <span class="input-group-addon">元</span>
+                                </div>
+                                <small class="help-block">可自行填写或修改金额</small>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">付款截图</label>
+                                <input type="hidden" id="payment_screenshot" name="payment_screenshot" value="{$row.payment_screenshot|default=''}" />
+                                <div class="input-group">
+                                    <input type="text" id="payment_screenshot_display" class="form-control" readonly placeholder="上传后显示路径" />
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" id="btn_upload_payment_screenshot">上传</button>
+                                    </span>
+                                </div>
+                                <input type="file" id="payment_screenshot_file" accept="image/*" style="display:none;" />
+                                <div id="payment_screenshot_preview" class="thumbnail" style="margin-top:8px;max-width:200px;display:none;">
+                                    <img id="payment_screenshot_img" src="" alt="付款截图" style="max-width:100%;" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layer-footer footer-bar">
+        <div class="row">
+            <label class="control-label col-xs-12 col-sm-4"></label>
+            <div class="col-xs-12 col-sm-8">
+                <button id="submitBtn" type="button" class="btn btn-primary btn-embossed" disabled>提交</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    (function () {
+        // 获取表单元素
+        var pickupDriverName = document.getElementById('pickupDriverName');
+        var pickupDriverPhone = document.getElementById('pickupDriverPhone');
+        var pickupDriverCost = document.getElementById('pickupDriverCost');
+        // 当前页面主要是送货司机，其他字段可能不存在，按可选处理
+        var deliveryDriverName = document.getElementById('deliveryDriverName');
+        var deliveryDriverPhone = document.getElementById('deliveryDriverPhone');
+        var deliveryDriverType = document.getElementById('deliveryDriverType');
+        var deliveryDriverCost = document.getElementById('deliveryDriverCost');
+        var deliveryCarNumber = document.getElementById('deliveryCarNumber');
+        var submitBtn = document.getElementById('submitBtn');
+        var deliveryStatusLabel = document.getElementById('deliveryStatusLabel');
+        var markDeliveryCompleteBtn = document.getElementById('markDeliveryCompleteBtn');
+        var deliveryStatus = parseInt("{$delivery_status|default=0}", 10) || 0;
+        var orderNumber = "{$order_number|default=''}";
+        
+        // 成本显示元素
+        var pickupCostDisplay = document.getElementById('pickupCostDisplay');
+        var dedicateCostDisplay = document.getElementById('dedicateCostDisplay');
+        var deliveryCostDisplay = document.getElementById('deliveryCostDisplay');
+        var totalCostDisplay = document.getElementById('totalCostDisplay');
+
+        // 获取专线司机元素
+        var dedicatedDriverName = document.getElementById('dedicatedDriverName');
+        var dedicateDriverPhone = document.getElementById('dedicateDriverPhone');
+        var dedicateDriverCost = document.getElementById('dedicateDriverCost');
+        
+        // 获取初始值（只需要验证姓名和电话）
+        var initialPickupDriverName = pickupDriverName ? (pickupDriverName.value || '').trim() : '';
+        var initialPickupDriverPhone = pickupDriverPhone ? (pickupDriverPhone.value || '').trim() : '';
+        var initialDeliveryDriverName = deliveryDriverName ? (deliveryDriverName.value || '').trim() : '';
+        var initialDeliveryDriverPhone = deliveryDriverPhone ? (deliveryDriverPhone.value || '').trim() : '';
+        var initialDedicatedDriverName = dedicatedDriverName ? (dedicatedDriverName.value || '').trim() : '';
+        var initialDedicateDriverPhone = dedicateDriverPhone ? (dedicateDriverPhone.value || '').trim() : '';
+
+        var hasAllServerValues = !!(
+            initialPickupDriverName &&
+            initialPickupDriverPhone &&
+            initialDeliveryDriverName &&
+            initialDeliveryDriverPhone &&
+            initialDedicatedDriverName &&
+            initialDedicateDriverPhone
+        );
+
+        function getIdsFromUrl() {
+            var url = new URL(window.location.href);
+            var fromQuery = url.searchParams.get('ids');
+            if (fromQuery) return fromQuery;
+            var m = url.pathname.match(/\/ids\/([^\/?]+)/);
+            return m ? m[1] : '';
+        }
+
+        function allRequiredFilled() {
+            // 当前页面只要求送货司机必填（姓名、电话和货运平台）
+            var hasDelivery = deliveryDriverName && deliveryDriverPhone && deliveryDriverType &&
+                deliveryDriverName.value.trim() && deliveryDriverPhone.value.trim() && !!deliveryDriverType.value;
+            return !!hasDelivery;
+        }
+
+        function updateCostDisplay() {
+            // 读取金额时，需要去掉千分位逗号；不存在的输入按 0 处理
+            var pickupCostStr = (pickupDriverCost && pickupDriverCost.value ? pickupDriverCost.value : '').replace(/,/g, '');
+            var dedicateCostStr = (dedicateDriverCost && dedicateDriverCost.value ? dedicateDriverCost.value : '').replace(/,/g, '');
+            var deliveryCostStr = (deliveryDriverCost && deliveryDriverCost.value ? deliveryDriverCost.value : '').replace(/,/g, '');
+            
+            var pickupCost = parseFloat(pickupCostStr) || 0;
+            var dedicateCost = parseFloat(dedicateCostStr) || 0;
+            var deliveryCost = parseFloat(deliveryCostStr) || 0;
+            var totalCost = pickupCost + deliveryCost + dedicateCost;
+            
+            if (pickupCostDisplay) pickupCostDisplay.value = pickupCost.toFixed(2);
+            if (dedicateCostDisplay) dedicateCostDisplay.value = dedicateCost.toFixed(2);
+            if (deliveryCostDisplay) deliveryCostDisplay.value = deliveryCost.toFixed(2);
+            if (totalCostDisplay) totalCostDisplay.value = totalCost.toFixed(2);
+        }
+
+        function updateButtonState() {
+            var filled = !!allRequiredFilled();
+            submitBtn.disabled = !filled;
+        }
+
+        function renderDeliveryStatus(status) {
+            if (!deliveryStatusLabel) return;
+            if (status === 2) {
+                deliveryStatusLabel.textContent = '已完成';
+                deliveryStatusLabel.className = 'label label-success';
+                if (markDeliveryCompleteBtn) markDeliveryCompleteBtn.style.display = 'none';
+            } else {
+                deliveryStatusLabel.textContent = '未完成';
+                deliveryStatusLabel.className = 'label label-warning';
+                if (markDeliveryCompleteBtn) markDeliveryCompleteBtn.style.display = 'inline-block';
+            }
+        }
+
+        // 添加事件监听器（只监听姓名、电话和货运平台输入框）
+        var allInputs = [pickupDriverName, pickupDriverPhone, 
+                        deliveryDriverName, deliveryDriverPhone, deliveryDriverType,
+                        dedicatedDriverName, dedicateDriverPhone].filter(function (el) { return !!el; });
+        
+        ['input', 'change'].forEach(function (evt) {
+            allInputs.forEach(function(input) {
+                input.addEventListener(evt, function() {
+                    updateButtonState();
+                    updateCostDisplay();
+                });
+            });
+        });
+        
+        // 金额输入框也监听变化（虽然只读，但需要更新显示）
+        [pickupDriverCost, dedicateDriverCost, deliveryDriverCost].forEach(function(input) {
+            if (input) {
+                input.addEventListener('change', function() {
+                    updateCostDisplay();
+                });
+            }
+        });
+
+        renderDeliveryStatus(deliveryStatus);
+
+        if (markDeliveryCompleteBtn) {
+            markDeliveryCompleteBtn.addEventListener('click', function () {
+                if (!orderNumber) {
+                    alert('订单号缺失，无法操作');
+                    return;
+                }
+                markDeliveryCompleteBtn.disabled = true;
+                fetch("{:url('logistics/confirm_driver_complete')}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: new URLSearchParams({orderid: orderNumber, type: 3}).toString()
+                }).then(function (res) {
+                    var ctype = res.headers.get('content-type') || '';
+                    if (ctype.indexOf('application/json') === -1) {
+                        return res.text().then(function () { throw new Error('后端未返回 JSON'); });
+                    }
+                    return res.json();
+                }).then(function (resp) {
+                    if (resp.code === 1) {
+                        deliveryStatus = 2;
+                        renderDeliveryStatus(deliveryStatus);
+                        alert(resp.msg || '操作成功');
+                    } else {
+                        alert(resp.msg || '操作失败');
+                    }
+                }).catch(function (e) {
+                    console.error(e);
+                    alert('操作失败');
+                }).finally(function () {
+                    markDeliveryCompleteBtn.disabled = false;
+                });
+            });
+        }
+
+        submitBtn.addEventListener('click', function () {
+            if (!allRequiredFilled()) return;
+
+            var ids = getIdsFromUrl();
+            var payload = new URLSearchParams();
+            // payload.append('pickup_driver_name', pickupDriverName.value.trim());
+            // payload.append('pickup_driver_phone', pickupDriverPhone.value.trim());
+            // // 金额不需要提交，后端会从订单中获取
+            // payload.append('dedicate_driver_name', dedicatedDriverName.value.trim());
+            // payload.append('dedicate_driver_phone', dedicateDriverPhone.value.trim());
+            // 金额不需要提交，后端会从订单中获取
+            payload.append('delivery_driver_name', deliveryDriverName.value.trim());
+            payload.append('delivery_driver_phone', deliveryDriverPhone.value.trim());
+            payload.append('d_type', deliveryDriverType.value);
+            if (deliveryCarNumber && deliveryCarNumber.value.trim()) {
+                payload.append('car_number', deliveryCarNumber.value.trim());
+            }
+            // 提交送货司机成本价格（允许填 0）
+            var deliveryCostValue = (deliveryDriverCost && deliveryDriverCost.value) ? deliveryDriverCost.value.replace(/,/g, '') : '';
+            var deliveryCostNum = parseFloat(deliveryCostValue);
+            if (deliveryCostValue !== '' && !isNaN(deliveryCostNum) && deliveryCostNum >= 0) {
+                // 提交的是“填入的原始价”；总部填写运满满时后台订单司机金额自动加9%税点（加盟商填写不自动加税点），备用金仍按原始价
+                payload.append('delivery_driver_cost', deliveryCostNum.toFixed(2));
+            }
+            var paymentScreenshotEl = document.getElementById('payment_screenshot');
+            if (paymentScreenshotEl && paymentScreenshotEl.value) {
+                payload.append('payment_screenshot', paymentScreenshotEl.value.trim());
+            }
+            payload.append('ids', ids);
+            payload.append('redirect_url', window.location.href);
+
+            submitBtn.disabled = true;
+
+            // 使用送货司机专用接口
+            var url = "{:url('logistics/add_songdriver')}";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: payload.toString()
+            })
+                .then(function (res) {
+                    var contentType = res.headers.get('content-type') || '';
+                    if (contentType.indexOf('application/json') !== -1) {
+                        return res.json();
+                    }
+                    return res.text().then(function (text) {
+                        return { code: 0, msg: text };
+                    });
+                })
+                .then(function (resp) {
+                    var ok = !!(resp && (Number(resp.code) === 1 || resp.success || (typeof resp.status === 'string' && resp.status.toLowerCase() === 'success')));
+                    if (ok) {
+                        try {
+                            if (window.parent && window.parent.layer) {
+                                var frameIndex = window.parent.layer.getFrameIndex(window.name);
+                                window.parent.layer.close(frameIndex);
+                                window.parent.location.reload();
+                                return;
+                            }
+                        } catch (e) {
+                            // 忽略
+                        }
+                        window.location.reload();
+                    } else {
+                        alert((resp && resp.msg) || '提交失败');
+                    }
+                })
+                .catch(function (e) {
+                    console.error(e);
+                    alert('提交失败');
+                })
+                .finally(function () {
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // // 初始化状态
+        // if (hasAllServerValues) {
+        //     allInputs.forEach(function (el) {
+        //         el.readOnly = true;
+        //     });
+        //     submitBtn.style.display = 'none';
+        // }
+        
+        // 付款截图上传与预览
+        (function initPaymentScreenshot() {
+            var hiddenInput = document.getElementById('payment_screenshot');
+            var displayInput = document.getElementById('payment_screenshot_display');
+            var fileInput = document.getElementById('payment_screenshot_file');
+            var uploadBtn = document.getElementById('btn_upload_payment_screenshot');
+            var previewDiv = document.getElementById('payment_screenshot_preview');
+            var previewImg = document.getElementById('payment_screenshot_img');
+            var cdnPrefix = (typeof Fast !== 'undefined' && Fast.api && Fast.api.cdnurl) ? Fast.api.cdnurl('') : '';
+
+            function setPaymentScreenshotUrl(url) {
+                if (!url) return;
+                hiddenInput.value = url;
+                if (displayInput) displayInput.value = url;
+                if (previewImg) {
+                    previewImg.src = (url.indexOf('http') === 0 || url.indexOf('//') === 0) ? url : (cdnPrefix.replace(/\/$/, '') + '/' + url.replace(/^\//, ''));
+                    previewDiv.style.display = previewImg.src ? 'block' : 'none';
+                }
+            }
+
+            if (hiddenInput && hiddenInput.value) {
+                setPaymentScreenshotUrl(hiddenInput.value);
+            }
+
+            if (uploadBtn && fileInput) {
+                uploadBtn.addEventListener('click', function () { fileInput.click(); });
+                fileInput.addEventListener('change', function (evt) {
+                    var file = evt.target.files && evt.target.files[0];
+                    if (!file) return;
+                    evt.target.value = '';
+                    if (typeof require === 'undefined') {
+                        alert('请刷新页面后重试上传');
+                        return;
+                    }
+                    require(['upload', 'layer'], function (Upload, Layer) {
+                        var idx = Layer && Layer.msg ? Layer.msg('上传中…', { offset: 't', time: 0 }) : null;
+                        Upload.api.send(file, function (data) {
+                            if (Layer && idx != null) Layer.close(idx);
+                            var url = (data && data.url) || (data && data.data && data.data.url) || '';
+                            if (url) {
+                                setPaymentScreenshotUrl(url);
+                                if (Layer && Layer.msg) Layer.msg('上传成功');
+                            }
+                        }, function () {
+                            if (Layer && idx != null) Layer.close(idx);
+                            if (Layer && Layer.msg) Layer.msg('上传失败');
+                        });
+                    });
+                });
+            }
+        })();
+
+        // 初始化显示和按钮状态
+        // 页面加载时，从只读输入框读取初始值并显示到成本汇总
+        // 延迟执行确保DOM已完全加载
+        setTimeout(function() {
+            updateCostDisplay();
+        }, 100);
+        updateButtonState();
+    })();
+</script>

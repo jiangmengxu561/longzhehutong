@@ -1,0 +1,129 @@
+<form id="upload-images-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="{:url('/admin/admin/order/save_images')}">
+
+    <input type="hidden" name="order_id" value="{$admin_order_id|default=''}">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">取货司机装货图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-pickup_load_image" class="form-control" size="50" name="pickup_load_image" type="text" value="{$images.pickup_load_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-pickup_load_image" class="btn btn-danger faupload" data-input-id="c-pickup_load_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-pickup_load_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-pickup_load_image" class="btn btn-primary fachoose" data-input-id="c-pickup_load_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-pickup_load_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-pickup_load_image"></ul>
+        </div>
+    </div> 
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">取货司机卸货图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-pickup_unload_image" class="form-control" size="50" name="pickup_unload_image" type="text" value="{$images.pickup_unload_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-pickup_unload_image" class="btn btn-danger faupload" data-input-id="c-pickup_unload_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-pickup_unload_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-pickup_unload_image" class="btn btn-primary fachoose" data-input-id="c-pickup_unload_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-pickup_unload_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-pickup_unload_image"></ul>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">专线装货图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-line_load_image" class="form-control" size="50" name="line_load_image" type="text" value="{$images.line_load_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-line_load_image" class="btn btn-danger faupload" data-input-id="c-line_load_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-line_load_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-line_load_image" class="btn btn-primary fachoose" data-input-id="c-line_load_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-line_load_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-line_load_image"></ul>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">专线卸货图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-line_unload_image" class="form-control" size="50" name="line_unload_image" type="text" value="{$images.line_unload_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-line_unload_image" class="btn btn-danger faupload" data-input-id="c-line_unload_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-line_unload_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-line_unload_image" class="btn btn-primary fachoose" data-input-id="c-line_unload_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-line_unload_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-line_unload_image"></ul>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">送货司机装货图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-delivery_load_image" class="form-control" size="50" name="delivery_load_image" type="text" value="{$images.delivery_load_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-delivery_load_image" class="btn btn-danger faupload" data-input-id="c-delivery_load_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-delivery_load_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-delivery_load_image" class="btn btn-primary fachoose" data-input-id="c-delivery_load_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-delivery_load_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-delivery_load_image"></ul>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">送货司机卸货图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-delivery_unload_image" class="form-control" size="50" name="delivery_unload_image" type="text" value="{$images.delivery_unload_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-delivery_unload_image" class="btn btn-danger faupload" data-input-id="c-delivery_unload_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-delivery_unload_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-delivery_unload_image" class="btn btn-primary fachoose" data-input-id="c-delivery_unload_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-delivery_unload_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-delivery_unload_image"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">回单图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-receipt_image" class="form-control" size="50" name="receipt_images" type="text" value="{$images.receipt_images|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-receipt_image" class="btn btn-danger faupload" data-input-id="c-receipt_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-receipt_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-receipt_image" class="btn btn-primary fachoose" data-input-id="c-receipt_image" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-receipt_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-receipt_image"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-3">物流单子图片:</label>
+        <div class="col-xs-12 col-sm-7">
+            <div class="input-group">
+                <input id="c-monad_images" class="form-control" size="50" name="monad_images" type="text" value="{$images.monad_image|default=''}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-monad_images" class="btn btn-danger faupload" data-input-id="c-monad_images" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="true" data-preview-id="p-monad_images"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-monad_images" class="btn btn-primary fachoose" data-input-id="c-monad_images" data-mimetype="image/*" data-multiple="true"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-monad_images"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-monad_images"></ul>
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-3"></label>
+        <div class="col-xs-12 col-sm-7">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>
+

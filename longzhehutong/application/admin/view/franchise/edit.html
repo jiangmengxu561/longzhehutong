@@ -1,0 +1,156 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    {:token()}
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">加盟商名称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-name" class="form-control" name="row[name]" type="text" value="{$row.name|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">联系人:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-contact" class="form-control" name="row[contact]" type="text" value="{$row.contact|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">联系电话:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-mobile" class="form-control" name="row[mobile]" type="text" value="{$row.mobile|htmlentities}" data-rule="mobile">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">区域{if $row.level==2}（区/县）{else}（市，可多选）{/if}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="region-search" class="form-control" type="text" placeholder="输入区域名称搜索" autocomplete="off">
+            <div id="region-list" style="max-height:180px;overflow:auto;border:1px solid #ddd;border-radius:4px;padding:6px;margin-top:5px;display:flex;flex-wrap:wrap;">
+                {if $row.level==2}
+                    {foreach $districtList as $d}
+                        {if in_array($d['pid'], $parentRegion)}
+                        <label class="checkbox-inline" style="width:32%;margin:2px 0;{if in_array($d.id,$occupiedRegionIds) && !in_array($d.id,$rowRegion)}opacity:.5;{/if}">
+                            <input type="checkbox" name="region_ids[]" value="{$d.id}" {if in_array($d.id, $rowRegion)}checked{/if} {if in_array($d.id,$occupiedRegionIds) && !in_array($d.id,$rowRegion)}disabled{/if}> {$d.name}
+                        </label>
+                        {/if}
+                    {/foreach}
+                {else}
+                    {foreach $cityList as $c}
+                    <label class="checkbox-inline" style="width:32%;margin:2px 0;{if in_array($c.id,$occupiedRegionIds) && !in_array($c.id,$rowRegion)}opacity:.5;{/if}">
+                        <input type="checkbox" name="region_ids[]" value="{$c.id}" {if in_array($c.id, $rowRegion)}checked{/if} {if in_array($c.id,$occupiedRegionIds) && !in_array($c.id,$rowRegion)}disabled{/if}> {$c.name}
+                    </label>
+                    {/foreach}
+                {/if}
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">当前钱包余额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-wallet_balance" class="form-control" name="row[wallet_balance]" type="number" step="0.01" value="{$row.wallet_balance}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">正式员工名额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-formal_employee_quota" class="form-control" name="row[formal_employee_quota]" type="number" min="0" value="{$row.formal_employee_quota}" placeholder="0=不限制">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">线路账号上限:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-line_quota" class="form-control" name="line_quota" type="number" min="0" value="{$row.line_quota}" placeholder="0=不限制">
+            <span class="help-block">该加盟商最多可开通的“线路”账号数，0=不限制</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">调度账号上限:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-dispatch_quota" class="form-control" name="dispatch_quota" type="number" min="0" value="{$row.dispatch_quota}" placeholder="0=不限制">
+            <span class="help-block">该加盟商最多可开通的“调度”账号数，0=不限制</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">订单扣费比例%:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-order_fee_percent" class="form-control" name="row[order_fee_percent]" type="number" step="0.001" value="{$row.order_fee_percent}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">物流需要审核:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="logistics_audit" value="1" {if $row.logistics_audit=='1'}checked{/if}> 该加盟商添加/修改/删除物流专线需总后台审核
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">合同上传:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="form-inline">
+                <input id="c-contract" class="form-control" size="28" name="row[contract]" type="text" value="{$row.contract|default=''|htmlentities}" placeholder="上传加盟合同文件">
+                <span><button type="button" id="plupload-contract" class="btn btn-danger plupload" data-input-id="c-contract" data-multiple="false" data-preview-id="p-contract"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                <span class="msg-box n-right" for="c-contract"></span>
+                <ul class="row list-inline plupload-preview" id="p-contract"></ul>
+            </div>
+            {if $row.contract}
+            <div style="margin-top:6px;">
+                <a id="contract-download" class="btn btn-xs btn-success" href="javascript:;" target="_blank"><i class="fa fa-download"></i> 下载合同</a>
+            </div>
+            <script>
+            (function () {
+                var url = {:json_encode($row.contract)};
+                if (url.indexOf('http') !== 0 && url.indexOf('//') !== 0
+                    && typeof Fast !== 'undefined' && Fast.api && Fast.api.cdnurl) {
+                    url = Fast.api.cdnurl(url);
+                }
+                var a = document.getElementById('contract-download');
+                if (a) a.href = url;
+            })();
+            </script>
+            {/if}
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-status" class="form-control" name="row[status]">
+                <option value="normal" {if $row.status=='normal'}selected{/if}>正常</option>
+                <option value="hidden" {if $row.status=='hidden'}selected{/if}>隐藏</option>
+                <option value="disabled" {if $row.status=='disabled'}selected{/if}>停用</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">备注:</label>
+        <div class="col-xs-12 col-sm-8">
+            <textarea id="c-remark" class="form-control" name="row[remark]" rows="2">{$row.remark|htmlentities}</textarea>
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>
+<script>
+document.getElementById('region-search').addEventListener('input', function () {
+    var kw = (this.value || '').trim();
+    var labels = document.querySelectorAll('#region-list label');
+    for (var k = 0; k < labels.length; k++) {
+        labels[k].style.display = (!kw || labels[k].textContent.indexOf(kw) !== -1) ? '' : 'none';
+    }
+});
+function sortRegionList() {
+    var list = document.getElementById('region-list');
+    var labels = Array.prototype.slice.call(list.querySelectorAll('label'));
+    labels.sort(function (a, b) {
+        var ca = a.querySelector('input').checked ? 1 : 0;
+        var cb = b.querySelector('input').checked ? 1 : 0;
+        return cb - ca;
+    });
+    labels.forEach(function (l) { list.appendChild(l); });
+}
+document.getElementById('region-list').addEventListener('change', sortRegionList);
+sortRegionList();
+</script>

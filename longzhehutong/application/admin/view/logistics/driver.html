@@ -1,0 +1,164 @@
+<form id="logisticsForm" role="form" autocomplete="off" method="post">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th style="width: 60%;">
+                <div class="input-group" style="margin-bottom: 10px;">
+                    <span class="input-group-addon">取货司机姓名</span>
+                    <input id="pickupDriverName" name="pickup_driver_name" type="text" class="form-control"
+                           placeholder="请输入取货司机姓名" value = '{$row.pickup_driver_name}' required />
+                </div>
+                <div class="input-group" style="margin-bottom: 10px;">
+                    <span class="input-group-addon">取货司机电话</span>
+                    <input id="pickupDriverPhone" name="pickup_driver_phone" type="tel" class="form-control"
+                           placeholder="请输入取货司机电话" value = '{$row.pickup_driver_phone}' required />
+                </div>
+                <div class="input-group" style="margin-bottom: 10px;">
+                    <span class="input-group-addon">发货司机姓名</span>
+                    <input id="deliveryDriverName" name="delivery_driver_name" type="text" class="form-control"
+                           placeholder="请输入发货司机姓名"  value = '{$row.delivery_driver_name}' required />
+                </div>
+                <div class="input-group" style="margin-bottom: 10px;">
+                    <span class="input-group-addon">发货司机电话</span>
+                    <input id="deliveryDriverPhone" name="delivery_driver_phone" type="tel" class="form-control"
+                           placeholder="请输入发货司机电话"  value = '{$row.delivery_driver_phone}' required />
+                </div>
+            </th>
+        </tr>
+        </thead>
+    </table>
+
+    <div class="layer-footer footer-bar">
+        <div class="row">
+            <label class="control-label col-xs-12 col-sm-4"></label>
+            <div class="col-xs-12 col-sm-8">
+                <button id="submitBtn" type="button" class="btn btn-primary btn-embossed" disabled>提交</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    (function () {
+        var pickupDriverName = document.getElementById('pickupDriverName');
+        var pickupDriverPhone = document.getElementById('pickupDriverPhone');
+        var deliveryDriverName = document.getElementById('deliveryDriverName');
+        var deliveryDriverPhone = document.getElementById('deliveryDriverPhone');
+        var submitBtn = document.getElementById('submitBtn');
+
+        // Snapshot initial values from backend to decide read-only/visibility state
+        var initialPickupDriverName = (pickupDriverName.value || '').trim();
+        var initialPickupDriverPhone = (pickupDriverPhone.value || '').trim();
+        var initialDeliveryDriverName = (deliveryDriverName.value || '').trim();
+        var initialDeliveryDriverPhone = (deliveryDriverPhone.value || '').trim();
+
+        var hasAllServerValues = !!(
+            initialPickupDriverName &&
+            initialPickupDriverPhone &&
+            initialDeliveryDriverName &&
+            initialDeliveryDriverPhone
+        );
+
+        function getIdsFromUrl() {
+            var url = new URL(window.location.href);
+            var fromQuery = url.searchParams.get('ids');
+            if (fromQuery) return fromQuery;
+            var m = url.pathname.match(/\/ids\/([^\/?]+)/);
+            return m ? m[1] : '';
+        }
+
+        function allRequiredFilled() {
+            return pickupDriverName.value.trim() &&
+                pickupDriverPhone.value.trim() &&
+                deliveryDriverName.value.trim() &&
+                deliveryDriverPhone.value.trim();
+        }
+
+        function updateButtonState() {
+            var filled = !!allRequiredFilled();
+            submitBtn.disabled = !filled;
+        }
+
+        ['input', 'change'].forEach(function (evt) {
+            pickupDriverName.addEventListener(evt, updateButtonState);
+            pickupDriverPhone.addEventListener(evt, updateButtonState);
+            deliveryDriverName.addEventListener(evt, updateButtonState);
+            deliveryDriverPhone.addEventListener(evt, updateButtonState);
+        });
+
+        submitBtn.addEventListener('click', function () {
+            if (!allRequiredFilled()) return;
+
+            var ids = getIdsFromUrl();
+            var payload = new URLSearchParams();
+            payload.append('pickup_driver_name', pickupDriverName.value.trim());
+            payload.append('pickup_driver_phone', pickupDriverPhone.value.trim());
+            payload.append('delivery_driver_name', deliveryDriverName.value.trim());
+            payload.append('delivery_driver_phone', deliveryDriverPhone.value.trim());
+            payload.append('ids', ids);
+            payload.append('redirect_url', window.location.href);
+
+            submitBtn.disabled = true;
+
+            var url = "{:url('logistics/add_driver')}";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: payload.toString()
+            })
+                .then(function (res) {
+                    var contentType = res.headers.get('content-type') || '';
+                    if (contentType.indexOf('application/json') !== -1) {
+                        return res.json();
+                    }
+                    return res.text().then(function (text) {
+                        return { code: 0, msg: text };
+                    });
+                })
+                .then(function (resp) {
+                    var ok = !!(resp && (Number(resp.code) === 1 || resp.success || (typeof resp.status === 'string' && resp.status.toLowerCase() === 'success')));
+                    if (ok) {
+                        // 只根据后端初始值控制只读与隐藏；首次提交成功不改变编辑与按钮可见性
+                        // 可选：提示
+                        // alert(resp.msg || '提交成功');
+                        try {
+                            if (window.parent && window.parent.layer) {
+                                var frameIndex = window.parent.layer.getFrameIndex(window.name);
+                                // 关闭弹窗
+                                window.parent.layer.close(frameIndex);
+                                // 刷新父页面
+                                window.parent.location.reload();
+                                return;
+                            }
+                        } catch (e) {
+                            // 忽略
+                        }
+                        // 非弹窗环境则直接刷新当前页
+                        window.location.reload();
+                    } else {
+                        alert((resp && resp.msg) || '提交失败');
+                    }
+                })
+                .catch(function (e) {
+                    console.error(e);
+                    alert('提交失败');
+                })
+                .finally(function () {
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // Initialize state on load: if backend已给出四个值，则只读并隐藏提交按钮
+        if (hasAllServerValues) {
+            [pickupDriverName, pickupDriverPhone, deliveryDriverName, deliveryDriverPhone].forEach(function (el) {
+                el.readOnly = true;
+            });
+            submitBtn.style.display = 'none';
+        }
+        updateButtonState();
+    })();
+</script>

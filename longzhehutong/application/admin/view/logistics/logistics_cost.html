@@ -1,0 +1,151 @@
+<style>
+    .page-wrap{max-width:680px;margin:24px auto;padding:16px}
+    .table{margin-bottom:0}
+    .footer-bar{position:sticky;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:12px 0;margin-top:16px}
+    .unit-addon{min-width:46px;text-align:center}
+    .help-tip{color:#888;font-size:12px;margin-top:6px}
+</style>
+<form id="logisticsForm" role="form" autocomplete="off">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th style="width: 60%;">
+                <div class="input-group">
+                    <input id="costInput" name="cost" type="number" class="form-control"
+                           placeholder="请输入物流成本金额" min="0" step="0.01" value = '{$row}' required />
+                    <input id="costInput1" name="cost" type="hidden" class="form-control"
+                           placeholder="请输入物流成本金额" min="0" step="0.01" value = '{$row}' required />
+                    <span class="input-group-addon unit-addon">元</span>
+                </div>
+                <div class="help-tip">支持两位小数，示例：12.50</div>
+            </th>
+        </tr>
+        </thead>
+    </table>
+
+    <div class="hide layer-footer footer-bar">
+        <div class="row">
+            <label class="control-label col-xs-12 col-sm-4"></label>
+            <div class="col-xs-12 col-sm-8">
+                <button id="submitBtn" type="button" class="btn btn-primary btn-embossed" disabled>提交</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    (function () {
+        var costInput = document.getElementById('costInput');
+        var costInput1 = document.getElementById('costInput1');
+        var submitBtn = document.getElementById('submitBtn');
+        var footerBar = document.querySelector('.footer-bar');
+
+        function isValidCost(value) {
+            if (value === '' || value === null || value === undefined) return false;
+            var num = Number(value);
+            if (!isFinite(num)) return false;
+            if (num < 0) return false;
+            // allow up to 2 decimals
+            return /^\d+(?:\.\d{1,2})?$/.test(String(value));
+        }
+
+        function getIdsFromUrl() {
+            var url = new URL(window.location.href);
+            var fromQuery = url.searchParams.get('ids');
+            if (fromQuery) return fromQuery;
+            var m = url.pathname.match(/\/ids\/([^\/?]+)/);
+            return m ? m[1] : '';
+        }
+
+        function toggleSubmitState() {
+            var valid = isValidCost(costInput.value);
+            if (valid) {
+                submitBtn.removeAttribute('disabled');
+                if (footerBar && footerBar.classList.contains('hide')) {
+                    footerBar.classList.remove('hide');
+                }
+            } else {
+                submitBtn.setAttribute('disabled', 'disabled');
+            }
+
+            // Hide submit button and make input readonly if value is not 0
+            if (costInput1.value !== '0.00') {
+                submitBtn.style.display = 'none';
+                costInput.setAttribute('readonly', 'readonly');
+            } else {
+                submitBtn.style.display = 'block';
+                costInput.removeAttribute('readonly');
+            }
+        }
+
+        function buildBody() {
+            var params = new URLSearchParams();
+            var ids = getIdsFromUrl();
+            if (ids) params.set('ids', ids);
+            params.set('cost', String(costInput.value).trim());
+            return params.toString();
+        }
+
+        function handleSubmit() {
+            if (!isValidCost(costInput.value)) {
+                alert('请输入有效的物流成本金额，最多两位小数');
+                return;
+            }
+            submitBtn.setAttribute('disabled', 'disabled');
+
+            var url = "{:url('logistics/add_logistics_cost')}";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: buildBody()
+            })
+                .then(function (resp) {
+
+                    if (resp.code === 1) {
+                        // 可选：提示
+                        // alert(resp.msg || '提交成功');
+
+                        // 成功后关闭当前页面/弹窗
+                        if (window.Fast && Fast.api && Fast.api.close) {
+                            var i = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(i);
+                            parent.location.reload();
+                        } else if (window.parent && parent.Layer && parent.Layer.getFrameIndex) {
+                            var index = parent.Layer.getFrameIndex(window.name);
+                            parent.Layer.close(index);
+                        } else {
+                            history.back();
+                        }
+                    } else {
+                        if (window.Fast && Fast.api && Fast.api.close) {
+                            var i = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(i);
+                            parent.location.reload();
+                        } else if (window.parent && parent.Layer && parent.Layer.getFrameIndex) {
+                            var index = parent.Layer.getFrameIndex(window.name);
+                            parent.Layer.close(index);
+                        } else {
+                            history.back();
+                        }
+                    }
+                })
+                .catch(function (e) {
+                    console.error(e);
+                    alert('提交失败');
+                })
+                .finally(function () {
+                    toggleSubmitState();
+                });
+        }
+
+        costInput.addEventListener('input', toggleSubmitState);
+        submitBtn.addEventListener('click', handleSubmit);
+
+        // Initialize button state on load
+        toggleSubmitState();
+    })();
+</script>

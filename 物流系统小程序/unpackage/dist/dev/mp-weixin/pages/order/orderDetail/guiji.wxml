@@ -1,0 +1,1 @@
+<view style="padding:20rpx;"><view class="flexJusp" style="align-items:center;height:104rpx;background-color:#FFF;border-radius:20rpx;margin-bottom:20rpx;padding:0 20rpx;"><view style="font-weight:bold;">订单编号</view><view>{{code}}</view></view><zfl-logistics vue-id="58e5d186-1" list="{{list}}" bind:__l="__l"></zfl-logistics></view>

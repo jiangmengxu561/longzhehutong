@@ -1,0 +1,145 @@
+<style type="text/css">
+    .orderstat-panel .sm-st {
+        background: #fff;
+        padding: 20px;
+        border-radius: 3px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    }
+    .orderstat-panel .sm-st-icon {
+        width: 60px;
+        height: 60px;
+        display: inline-block;
+        line-height: 60px;
+        text-align: center;
+        font-size: 30px;
+        background: #eee;
+        border-radius: 5px;
+        float: left;
+        margin-right: 15px;
+        color: #fff;
+    }
+    .orderstat-panel .sm-st-info span {
+        display: block;
+        font-size: 24px;
+        font-weight: 600;
+    }
+    .orderstat-panel .st-dispatch { background: #F05050 !important; }
+    .orderstat-panel .st-line { background: #27C24C !important; }
+    .orderstat-panel .st-total { background: #23b7e5 !important; }
+    .orderstat-filter .form-group { margin-right: 15px; margin-bottom: 10px; }
+</style>
+<div class="panel panel-default panel-intro orderstat-panel">
+    <div class="panel-heading">
+        {:build_heading(null, false)}
+    </div>
+    <div class="panel-body">
+        <p class="text-muted">仅统计管理员组为「调度」和「线路」的抢单数据，数据来源于 admin_order 表。</p>
+
+        <form class="form-inline orderstat-filter" role="form" style="margin-bottom:20px;">
+            <div class="form-group">
+                <label>统计日期</label>
+                <input type="date" id="stat-date-start" class="form-control" value="{$statStartDate|default=''}">
+            </div>
+            <div class="form-group">
+                <label>至</label>
+                <input type="date" id="stat-date-end" class="form-control" value="{$statEndDate|default=''}">
+            </div>
+            <div class="form-group">
+                <label>管理员</label>
+                <select id="stat-admin" class="form-control" style="min-width:140px;">
+                    <option value="">全部</option>
+                    {volist name="adminList" id="adm"}
+                    <option value="{$adm.id}">{$adm.group_name|default=''} - {$adm.nickname|default=$adm.username}</option>
+                    {/volist}
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" id="stat-submit"><i class="fa fa-search"></i> 查询</button>
+        </form>
+
+        <div class="row">
+            <div class="col-sm-4 col-xs-12">
+                <div class="sm-st clearfix">
+                    <span class="sm-st-icon st-dispatch"><i class="fa fa-truck"></i></span>
+                    <div class="sm-st-info">
+                        <span id="dispatch-grab">{$statData.dispatch.grab|default=0}</span>
+                        调度抢单数
+                    </div>
+                </div>
+                <div class="sm-st clearfix">
+                    <span class="sm-st-icon st-dispatch" style="opacity:0.8;"><i class="fa fa-check"></i></span>
+                    <div class="sm-st-info">
+                        <span id="dispatch-processed">{$statData.dispatch.processed|default=0}</span>
+                        调度已完成
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 col-xs-12">
+                <div class="sm-st clearfix">
+                    <span class="sm-st-icon st-line"><i class="fa fa-road"></i></span>
+                    <div class="sm-st-info">
+                        <span id="line-grab">{$statData.line.grab|default=0}</span>
+                        线路抢单数
+                    </div>
+                </div>
+                <div class="sm-st clearfix">
+                    <span class="sm-st-icon st-line" style="opacity:0.8;"><i class="fa fa-check"></i></span>
+                    <div class="sm-st-info">
+                        <span id="line-processed">{$statData.line.processed|default=0}</span>
+                        线路已完成
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4 col-xs-12">
+                <div class="sm-st clearfix">
+                    <span class="sm-st-icon st-total"><i class="fa fa-bar-chart"></i></span>
+                    <div class="sm-st-info">
+                        <span id="total-grab">{$statData.total.grab|default=0}</span>
+                        合计抢单数
+                    </div>
+                </div>
+                <div class="sm-st clearfix">
+                    <span class="sm-st-icon st-total" style="opacity:0.8;"><i class="fa fa-check-circle"></i></span>
+                    <div class="sm-st-info">
+                        <span id="total-processed">{$statData.total.processed|default=0}</span>
+                        合计已完成
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4 class="panel-title">抢单统计图表</h4></div>
+                    <div class="panel-body">
+                        <div id="orderstat-chart" style="width:100%;height:300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4 class="panel-title">管理员抢单明细</h4></div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-striped table-hover" id="admin-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>管理员</th>
+                                    <th>角色</th>
+                                    <th>抢单数</th>
+                                    <th>已完成</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-detail-tbody">
+                                <tr><td colspan="4" class="text-center text-muted">请选择日期后点击查询</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

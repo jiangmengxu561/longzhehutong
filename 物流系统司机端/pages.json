@@ -1,0 +1,148 @@
+{
+	"easycom": {
+	    "^ex-(.*)": "@/uni_modules/ex-ui/components/ex-$1/ex-$1.vue"
+	},
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path" : "pages/login/login",
+			"style" : 
+			{
+				"navigationBarTitleText" : "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/order/order",
+			"style" : 
+			{
+				"navigationBarTitleText" : "订单",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path" : "pages/user/user",
+			"style" : 
+			{
+				"navigationBarTitleText" : "我的",
+				"navigationStyle": "custom"
+			}
+		},
+	
+		{
+			"path" : "pages/login/register/register",
+			"style" : 
+			{
+				"navigationBarTitleText" : "注册",
+				"navigationStyle": "custom"
+			}
+		},{
+			"path" : "pages/user/agreement/agreement",
+			"style" : 
+			{
+				"navigationBarTitleText" : "协议"
+			}
+		},
+		{
+			"path" : "pages/user/personalData/personalData",
+			"style" : 
+			{
+				"navigationBarTitleText" : "个人信息",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/user/set/set",
+			"style" : 
+			{
+				"navigationBarTitleText" : "设置中心",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/user/Complaint/Complaint",
+			"style" : 
+			{
+				"navigationBarTitleText" : "意见反馈",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/user/myWallet/myWallet",
+			"style" : 
+			{
+				"navigationBarTitleText" : "我的钱包",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/user/myWallet/withdraw",
+			"style" : 
+			{
+				"navigationBarTitleText" : "提现",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/order/orderDetail/orderDetail",
+			"style" : 
+			{
+				"navigationBarTitleText" : "订单详情",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/index/orderDetail/orderDetail",
+			"style" : 
+			{
+				"navigationBarTitleText" : "订单详情",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path" : "pages/index/RegionSelection/RegionSelection",
+			"style" : 
+			{
+				"navigationBarTitleText" : "地区选择"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#333333",
+		"selectedColor": "#4878FF",
+		"list": [{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/images/icon_dbsy1.png",
+				"selectedIconPath": "static/images/icon_dbsy.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/order/order",
+				"iconPath": "static/images/icon_dbdd.png",
+				"selectedIconPath": "static/images/icon_dbdd1.png",
+				"text": "订单"
+			},
+			{
+				"pagePath": "pages/user/user",
+				"iconPath": "static/images/icon_dbwd.png",
+				"selectedIconPath": "static/images/icon_dbwd1.png",
+				"text": "我的"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}

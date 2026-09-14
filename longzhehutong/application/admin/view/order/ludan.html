@@ -1,0 +1,647 @@
+<style>
+.ludan-header { background: #f8f9fa; border: 1px solid #dee2e6; padding: 12px 15px; margin-bottom: 15px; border-radius: 4px; }
+.ludan-header .title { font-size: 18px; font-weight: bold; margin-right: 20px; }
+.ludan-header .item { margin-right: 20px; white-space: nowrap; }
+.ludan-header .item label { margin: 0 4px 0 0; color: #666; }
+.ludan-sender-receiver { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+.ludan-sender-receiver .panel { flex: 1; margin-bottom: 0; min-width: 280px; }
+.ludan-upload-btn { display: inline-block; padding: 10px 16px; margin: 5px 5px 5px 0; border: 1px dashed #ccc; border-radius: 4px; background: #fafafa; cursor: pointer; }
+.ludan-upload-btn:hover { background: #f0f0f0; }
+.ludan-address-row { display: flex; align-items: flex-start; gap: 8px; }
+.ludan-address-row .form-control { flex: 1; }
+.ludan-map-picker-btn { white-space: nowrap; padding: 6px 12px; }
+#ludan-map-modal .modal-dialog { width: 700px; }
+#ludan-map-modal .map-search-row { margin-bottom: 10px; }
+#ludan-map-modal #ludan-map-container { width: 100%; height: 400px; }
+.ludan-form-body { max-width: 100%; }
+</style>
+
+<!-- 提前加载百度地图（主文档内加载，搜索回调才能正常触发），ak 来自后台配置 site.BaiduKey，空时用兜底 key 避免瓦片 403 -->
+<script>var LUDAN_BAIDU_AK = "{$baidu_ak|default='T6fLs4Xa9Hj16REmRNyeY20ZU5ODkpV2'}";</script>
+<script>window.__ludanBMapReady=function(){window.__ludanBMapLoaded=true;};</script>
+<script src="https://api.map.baidu.com/api?v=2.0&ak={$baidu_ak|default='T6fLs4Xa9Hj16REmRNyeY20ZU5ODkpV2'}&callback=__ludanBMapReady"></script>
+
+<form id="ludan-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="{:url('order/ludan_save')}">
+ 
+    <!-- 头部：货物托运单（仅保留后台有存储的项） -->
+    <div class="ludan-header">
+        <span class="title">货物托运单</span>
+        <span class="item"><label>单号:</label><input type="text" id="display-orderid" class="form-control input-sm" style="display:inline-block;width:140px;" placeholder="保存后生成" readonly></span>
+        <span class="item"><label>当前时间:</label><span id="ludan-now">{:date('Y-m-d H:i:s')}</span></span>
+        <span class="item"><label>运单预计到达:</label><input type="text" id="c-arrivaltime" class="form-control input-sm datetimepicker" style="display:inline-block;width:150px;" data-date-format="YYYY-MM-DD" name="row[arrivaltime]" placeholder="选填"></span>
+    </div>
+
+    <div class="row ludan-form-body">
+        <div class="col-xs-12">
+            <!-- 发货方 | 收货方 --> 
+            <div class="ludan-sender-receiver">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><strong>发货方</strong></div>
+                    <div class="panel-body">
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">地址粘贴识别</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="c-loading-paste" rows="2" placeholder="粘贴：姓名、电话、地址（支持多行、空格、逗号分隔）"></textarea>
+                                <span class="input-group-btn" style="vertical-align:top;">
+                                    <button type="button" class="btn btn-default" id="btn-loading-recognize">识别</button>
+                                </span>
+                            </div>
+                            <small class="text-muted">粘贴后会自动识别并回填下方：发货人、手机号码、发货地址</small>
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">发货人 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="c-loading-name" name="loading_sender_name" data-rule="required" placeholder="请输入发货人" autocomplete="off">
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">手机号码 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="c-loading-mobile" name="loading_sender_mobile" data-rule="required" placeholder="请输入手机号码" autocomplete="off">
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">发货地址 <span class="text-danger">*</span></label>
+                            <div class="ludan-address-row">
+                                <input type="text" class="form-control ludan-input-address" id="c-loading-address" name="loading_sender_address" data-rule="required" placeholder="请输入或地图选点" autocomplete="off">
+                                <button type="button" class="btn btn-default ludan-map-picker-btn" id="btn-map-loading" title="地图选点"><i class="fa fa-map-marker"></i> 地图选点</button>
+                            </div>
+                            <input type="hidden" name="loading_sender_lng" id="c-loading-lng" value="">
+                            <input type="hidden" name="loading_sender_lat" id="c-loading-lat" value="">
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading"><strong>收货方</strong></div>
+                    <div class="panel-body">
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">地址粘贴识别</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="c-unload-paste" rows="2" placeholder="粘贴：姓名、电话、地址（支持多行、空格、逗号分隔）"></textarea>
+                                <span class="input-group-btn" style="vertical-align:top;">
+                                    <button type="button" class="btn btn-default" id="btn-unload-recognize">识别</button>
+                                </span>
+                            </div>
+                            <small class="text-muted">粘贴后会自动识别并回填下方：收货人、手机号码、收货地址</small>
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">收货人 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="c-unload-name" name="unload_receiver_name" data-rule="required" placeholder="请输入收货人" autocomplete="off">
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">手机号码 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="c-unload-mobile" name="unload_receiver_mobile" data-rule="required" placeholder="请输入手机号码" autocomplete="off">
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">收货地址 <span class="text-danger">*</span></label>
+                            <div class="ludan-address-row">
+                                <input type="text" class="form-control ludan-input-address" id="c-unload-address" name="unload_receiver_address" data-rule="required" placeholder="请输入或地图选点" autocomplete="off">
+                                <button type="button" class="btn btn-default ludan-map-picker-btn" id="btn-map-unload" title="地图选点"><i class="fa fa-map-marker"></i> 地图选点</button>
+                            </div>
+                            <input type="hidden" name="unload_receiver_lng" id="c-unload-lng" value="">
+                            <input type="hidden" name="unload_receiver_lat" id="c-unload-lat" value="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 货物明细 -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><strong>货物明细</strong></div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-2">
+                            <label class="control-label">包装</label>
+                            <input id="c-packaging_id" data-source="packaging/index" class="form-control selectpage" name="row[packaging_id]" type="text" value="" placeholder="包装">
+                        </div>
+                        <div class="col-sm-2">
+                            <label class="control-label">件数</label>
+                            <input id="c-quantity" class="form-control" name="row[quantity]" type="text" value="1">
+                        </div>
+                        <div class="col-sm-2">
+                            <label class="control-label">重量(kg)</label>
+                            <input id="c-weight" class="form-control" name="row[weight]" type="number" value="1" placeholder="重量">
+                        </div> 
+                        <div class="col-sm-2">
+                            <label class="control-label">体积(方)</label>
+                            <input id="c-direction" class="form-control" name="row[direction]" type="text" value="1" placeholder="自动计算" >
+                        </div> 
+                        <div class="col-sm-2">
+                            <label class="control-label">货物类型 <span class="text-danger">*</span></label>
+                            <input id="c-goods_type_id" data-rule="required" data-source="goods/type/index" class="form-control selectpage" name="row[goods_type_id]" type="text" value="" placeholder="货物类型">
+                        </div> 
+                    </div>
+                    <div class="row" style="margin-top:10px;">
+                        <div class="col-sm-2"><label class="control-label">长(cm)</label><input id="c-long" class="form-control" name="row[long]" type="text" value="1" oninput="calculateVolume()"></div>
+                        <div class="col-sm-2"><label class="control-label">宽(cm)</label><input id="c-wide" class="form-control" name="row[wide]" type="text" value="1" oninput="calculateVolume()"></div>
+                        <div class="col-sm-2"><label class="control-label">高(cm)</label><input id="c-hige" class="form-control" name="row[hige]" type="text" value="1" oninput="calculateVolume()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 费用结算（仅后台有的字段） -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><strong>费用结算</strong></div>
+                <div class="panel-body">
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">合计运费</label>
+                        <input id="c-pay_price" class="form-control" name="row[pay_price]" type="number" step="0.01" value="0" placeholder="0" style="width:120px;">
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">付款方式</label>
+                        <div class="radio">
+                            {foreach name="payTypeList" item="vo" key="key"}
+                            <label style="margin-right:12px;"><input name="row[pay_type]" type="radio" value="{$key}" {in name="key" value="1"}checked{/in} /> {$vo}</label>
+                            {/foreach}
+                        </div>
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">是否代收货款</label>
+                        <div class="radio">
+                            {foreach name="deliveryList" item="vo" key="key"}
+                            <label style="margin-right:12px;"><input name="row[delivery]" type="radio" value="{$key}" {in name="key" value="0"}checked{/in} /> {$vo}</label>
+                            {/foreach}
+                        </div>
+                    </div>
+                    <div id="cod-fields" style="display:none;">
+                        <div class="form-group form-group-sm">
+                            <label class="control-label">代收金额</label>
+                            <input id="c-behalf_price" class="form-control" name="charge[behalf_price]" type="number" step="0.01" placeholder="代收金额" style="width:120px;">
+                        </div>
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">等通知放货</label>
+                        <select id="c-control" class="form-control" name="row[control]" style="width:180px;">
+                            {foreach name="controlList" item="vo" key="key"}
+                            <option value="{$key}" {in name="vo" value="到站点等通知放货"}selected{/in}>{$vo}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">回单</label>
+                        <input id="c-receipt_type_id" data-source="receipt/type/index" class="form-control selectpage" name="row[receipt_type_id]" type="text" value="" placeholder="回单方式" style="width:180px;">
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">经办人</label>
+                        <input type="text" class="form-control" value="{$admin.username|default='当前登录'}" readonly style="width:120px; background:#f5f5f5;">
+                        <small class="text-muted">（保存时自动记录为您本人）</small>
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">送货方式</label>
+                        <input id="c-delivery_type_id" data-source="delivery/type/index" class="form-control selectpage" name="row[delivery_type_id]" type="text" value="" placeholder="请选择" style="width:180px;">
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">车型 <span class="text-danger">*</span></label>
+                        <input id="c-car_type_id" data-rule="required" data-source="car/type/index" class="form-control selectpage" name="row[car_type_id]" type="text" value="" placeholder="请选择车型" style="width:180px;">
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">最早发货时间</label>
+                        <input id="c-earliest_time" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" name="row[earliest_time]" type="text" value="{:date('Y-m-d H:i:s')}" style="width:160px;">
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">最晚发货时间</label>
+                        <input id="c-latest_time" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" name="row[latest_time]" type="text" value="{:date('Y-m-d H:i:s')}" style="width:160px;">
+                    </div>
+                    <div class="form-group form-group-sm">
+                        <label class="control-label">找车类型</label>
+                        <div class="radio">
+                            {foreach name="findCarTypeList" item="vo" key="key"}
+                            <label style="margin-right:12px;"><input name="row[find_car_type]" type="radio" value="{$key}" {in name="vo" value="专车"}checked{/in} /> {$vo}</label>
+                            {/foreach}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 上传照片（goods_image） -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><strong>上传照片</strong></div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <input type="hidden" name="row[goods_image]" id="c-goods_image" value="">
+                        <span class="ludan-upload-btn" id="btn-upload-local"><i class="fa fa-upload"></i> 本地上传</span>
+                        <div id="upload-preview" style="margin-top:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="row[isinvoice]" value="0">
+            <input type="hidden" name="row[isrequirements]" value="0">
+            <input type="hidden" name="row[service]" value="派送">
+            <input type="hidden" name="row[text_message]" value="1">
+            <input type="hidden" name="row[pay_status]" value="1">
+            <input type="hidden" name="row[logistics_status]" value="1">
+            <input type="hidden" name="row[userid]" id="c-userid" value="">
+            <input type="hidden" name="row[unpack_id]" value="">
+            <input type="hidden" name="row[other_id]" value="">
+            <input type="hidden" name="submit_token" id="c-submit-token" value="{$ludan_submit_token|default=''}">
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-lg">保存录单</button>
+            </div>
+        </div> 
+    </div>
+</form>
+  
+<!-- 地图选点弹窗 -->
+<div class="modal fade" id="ludan-map-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <h4 class="modal-title" id="ludan-map-modal-title">地图选点</h4>
+            </div>
+            <div class="modal-body">
+                <div class="map-search-row input-group">
+                    <input type="text" class="form-control" id="ludan-map-search" placeholder="输入地址搜索后选点或直接在地图上点击选点">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-primary" id="ludan-map-search-btn">搜索</button>
+                    </span>
+                </div>
+                <div id="ludan-map-container"></div>
+<!--                <p class="text-muted small" style="margin- top:8px;">点击地图可选取位置，选中的地址将填入上方输入框。</p>-->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="ludan-map-confirm">确定</button>
+            </div> 
+        </div>
+    </div>
+</div> 
+
+<script>
+(function() {
+    function initLudan($) {
+    "use strict";
+    if (window.__ludanInited) {
+        return;
+    }
+    window.__ludanInited = true;
+    function calculateVolume() {
+        var long = parseFloat($('#c-long').val()) || 0, wide = parseFloat($('#c-wide').val()) || 0, hige = parseFloat($('#c-hige').val()) || 0;
+        if (long > 0 && wide > 0 && hige > 0) $('#c-direction').val(((long/100)*(wide/100)*(hige/100)).toFixed(6));
+    }
+    // 兼容 HTML 内联 oninput="calculateVolume()"
+    window.calculateVolume = calculateVolume;
+
+    var ludanMapTarget = null;
+    var ludanMapSelection = null;
+    var ludanBaiduMap = null;
+    var ludanBaiduMarker = null;
+    var ludanBaiduGeocoder = null;
+
+    function buildAddressFromComponent(addrComp) {
+        if (!addrComp) return '';
+        var p = addrComp.province || '', c = addrComp.city || '', d = addrComp.district || '', s = addrComp.street || '', n = addrComp.streetNumber || '';
+        return [p, c, d, s, n].filter(Boolean).join('');
+    }
+
+    function parseAddressPasteText(raw) {
+        var text = (raw || '').replace(/\r/g, '\n').trim();
+        if (!text) return { name: '', mobile: '', address: '' };
+
+        var normalized = text.replace(/[，,;；|]+/g, ' ').replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+        // 支持：13800138000 / 138 0013 8000 / 138-0013-8000 / +86 13800138000
+        var phoneMatch = normalized.match(/(?:\+?86[\s-]*)?(1[3-9]\d(?:[\s-]?\d){8})/);
+        var mobile = '';
+        if (phoneMatch && phoneMatch[1]) {
+            mobile = String(phoneMatch[1]).replace(/[^\d]/g, '');
+            if (mobile.length > 11) mobile = mobile.slice(-11);
+        }
+        var withoutPhone = phoneMatch ? normalized.replace(phoneMatch[0], ' ') : normalized;
+        withoutPhone = withoutPhone.replace(/\s+/g, ' ').trim();
+
+        var tokens = withoutPhone ? withoutPhone.split(' ') : [];
+        var name = '';
+        var nameIndex = -1;
+        for (var i = 0; i < tokens.length; i++) {
+            var t = (tokens[i] || '').trim();
+            if (!t) continue;
+            if (/[省市区县镇乡街路号村大道巷栋单元室]/.test(t)) continue;
+            if (/^\d+$/.test(t)) continue;
+            if (t.length <= 8) {
+                name = t;
+                nameIndex = i;
+                break;
+            }
+        }
+
+        var addressParts = []; 
+        for (var j = 0; j < tokens.length; j++) {
+            if (j === nameIndex) continue;
+            if (tokens[j]) addressParts.push(tokens[j]);
+        }
+        var address = addressParts.join(' ').trim(); 
+
+        if (!address && nameIndex === 0) {
+            address = tokens.slice(1).join(' ').trim();
+        }
+        if (!address && !name) {
+            address = withoutPhone;
+        }
+        // 兜底：仍无法拆分时，至少把原文当地址回填，避免“点击没反应”
+        if (!address) {
+            address = text.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+        return { name: name, mobile: mobile, address: address };
+    }
+
+    var ludanMapInitRetryCount = 0;
+    var ludanMapInitRetryMax = 15;
+
+    function initLudanMapPicker() {
+        var container = document.getElementById('ludan-map-container');
+        if (!container) return;
+        if (typeof BMap === 'undefined') {
+            if (ludanMapInitRetryCount < ludanMapInitRetryMax) {
+                ludanMapInitRetryCount++;
+                if (typeof Layer !== 'undefined') Layer.msg('地图加载中，请稍候…');
+                setTimeout(initLudanMapPicker, 200);
+            } else {
+                ludanMapInitRetryCount = 0;
+                if (typeof Layer !== 'undefined') Layer.msg('地图加载失败，请检查网络或刷新后重试');
+            }
+            return;
+        }
+        ludanMapInitRetryCount = 0;
+        if (ludanBaiduMap) {
+            if (ludanBaiduMarker) { ludanBaiduMap.removeOverlay(ludanBaiduMarker); ludanBaiduMarker = null; }
+            try {
+                var c = ludanBaiduMap.getCenter();
+                var z = ludanBaiduMap.getZoom();
+                if (c) ludanBaiduMap.centerAndZoom(c, z);
+            } catch (e) {}
+            try { window.dispatchEvent(new Event('resize')); } catch (e2) {}
+        } else {
+            try {
+                ludanBaiduMap = new BMap.Map(container);
+                ludanBaiduMap.centerAndZoom(new BMap.Point(116.404, 39.915), 12);
+                ludanBaiduMap.enableScrollWheelZoom(true);
+                ludanBaiduGeocoder = new BMap.Geocoder();
+                ludanBaiduMap.addEventListener('click', function(e) {
+                    var pt = e.point;
+                    ludanBaiduGeocoder.getLocation(pt, function(rs) {
+                        var addr = buildAddressFromComponent(rs.addressComponents);
+                        if (!addr) addr = rs.address || (pt.lng + ',' + pt.lat);
+                        ludanMapSelection = { address: addr, lng: pt.lng, lat: pt.lat };
+                        if (ludanBaiduMarker) ludanBaiduMap.removeOverlay(ludanBaiduMarker);
+                        ludanBaiduMarker = new BMap.Marker(pt);
+                        ludanBaiduMap.addOverlay(ludanBaiduMarker);
+                    });
+                });
+            } catch (err) {
+                if (typeof Layer !== 'undefined') Layer.msg('地图初始化失败：' + (err.message || '请稍后重试'));
+                return;
+            } 
+        }
+        ludanMapSelection = null;
+        $('#ludan-map-search').val('');
+    }
+
+    function openLudanMapPicker(target) {
+        ludanMapTarget = target;
+        ludanMapSelection = null;
+        $('#ludan-map-modal-title').text(target === 'loading' ? '地图选点 - 发货地址' : '地图选点 - 收货地址');
+        $('#ludan-map-modal').modal('show');
+    }
+
+    $('#ludan-map-modal').on('shown.bs.modal', function() {
+        setTimeout(function() { initLudanMapPicker(); }, 300);
+    });
+
+    $('#ludan-map-search-btn').on('click', function() {
+        var keyword = $('#ludan-map-search').val().trim();
+        if (!keyword) {
+            if (typeof Layer !== 'undefined') Layer.msg('请输入要搜索的地址');
+            return;
+        }
+        if (typeof BMap === 'undefined' || !ludanBaiduGeocoder || !ludanBaiduMap) {
+            if (typeof Layer !== 'undefined') Layer.msg('请等待地图加载完成后再搜索');
+            return;
+        }
+        if (typeof Layer !== 'undefined') Layer.msg('搜索中…');
+        var searchDone = false;
+        var searchTimeout = setTimeout(function() {
+            if (searchDone) return;
+            searchDone = true;
+            if (typeof Layer !== 'undefined') Layer.msg('搜索超时，请检查网络或换个关键词重试');
+        }, 8000);
+        ludanBaiduGeocoder.getPoint(keyword, function(pt) {
+            if (searchDone) return;
+            searchDone = true;
+            clearTimeout(searchTimeout);
+            if (!pt) {
+                if (typeof Layer !== 'undefined') Layer.msg('未找到该地址，请换个关键词试试');
+                return;
+            }
+            ludanBaiduMap.centerAndZoom(pt, 16);
+            if (ludanBaiduMarker) ludanBaiduMap.removeOverlay(ludanBaiduMarker);
+            ludanBaiduMarker = new BMap.Marker(pt);
+            ludanBaiduMap.addOverlay(ludanBaiduMarker);
+            ludanBaiduGeocoder.getLocation(pt, function(rs) {
+                var addr = buildAddressFromComponent(rs.addressComponents);
+                if (!addr) addr = rs.address || keyword;
+                ludanMapSelection = { address: addr, lng: pt.lng, lat: pt.lat };
+            });
+        }, '');
+    });
+
+    $('#ludan-map-confirm').on('click', function() {
+        if (!ludanMapSelection) {
+            if (typeof Layer !== 'undefined') Layer.msg('请在地图上点击选点或先搜索地址');
+            return;
+        }
+        if (ludanMapTarget === 'loading') {
+            $('#c-loading-address').val(ludanMapSelection.address);
+            $('#c-loading-lng').val(ludanMapSelection.lng);
+            $('#c-loading-lat').val(ludanMapSelection.lat);
+        } else {
+            $('#c-unload-address').val(ludanMapSelection.address);
+            $('#c-unload-lng').val(ludanMapSelection.lng);
+            $('#c-unload-lat').val(ludanMapSelection.lat);
+            $('#dest-address').text(ludanMapSelection.address);
+        }
+        $('#ludan-map-modal').modal('hide');
+    });
+
+    function loadBaiduMapScript(cb) {
+        if (typeof BMap !== 'undefined') { if (cb) cb(); return; }
+        var ak = (typeof LUDAN_BAIDU_AK !== 'undefined' ? LUDAN_BAIDU_AK : '') || '';
+        if (!ak) {
+            if (typeof Layer !== 'undefined') Layer.msg('请在后台配置百度地图密钥（系统配置 - BaiduKey）');
+            return;
+        }
+        var callbackName = '__ludanBMapReady_' + Date.now();
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden;';
+        document.body.appendChild(iframe);
+        var doc = iframe.contentDocument || iframe.contentWindow.document;
+        window[callbackName] = function() {
+            try { window.BMap = iframe.contentWindow.BMap; } catch (e) {}
+            window[callbackName] = null;
+            if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+            if (cb) cb();
+        };
+        doc.open();
+        doc.write('<!DOCTYPE html><html><head><\/head><body>');
+        doc.write('<script>function init(){try{parent.BMap=window.BMap;}catch(e){}if(parent.' + callbackName + ')parent.' + callbackName + '();}<\/script>');
+        doc.write('<script src="https://api.map.baidu.com/api?v=2.0&ak=' + encodeURIComponent(ak) + '&callback=init"><\/script>');
+        setTimeout(function() {
+            if (window[callbackName]) {
+                window[callbackName] = null;
+                if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                if (typeof Layer !== 'undefined') Layer.msg('地图加载超时，请检查网络或百度AK');
+            }
+        }, 15000);
+    }
+
+    $('#btn-map-loading').on('click', function() {
+        loadBaiduMapScript(function() { openLudanMapPicker('loading'); });
+    });
+    $('#btn-map-unload').on('click', function() {
+        loadBaiduMapScript(function() { openLudanMapPicker('unload'); });
+    });
+
+    function doRecognize(which) {
+        var isLoading = which === 'loading';
+        var $paste = isLoading ? $('#c-loading-paste') : $('#c-unload-paste');
+        var raw = ($paste.val() || '').trim();
+        var parsed = parseAddressPasteText(raw);
+        if (isLoading) {
+            if (parsed.name) $('#c-loading-name').val(parsed.name);
+            if (parsed.mobile) $('#c-loading-mobile').val(parsed.mobile);
+            if (parsed.address) $('#c-loading-address').val(parsed.address);
+        } else {
+            if (parsed.name) $('#c-unload-name').val(parsed.name);
+            if (parsed.mobile) $('#c-unload-mobile').val(parsed.mobile);
+            if (parsed.address) $('#c-unload-address').val(parsed.address);
+            $('#dest-name').text($('#c-unload-name').val() || '-');
+            $('#dest-phone').text($('#c-unload-mobile').val() || '-');
+            $('#dest-address').text($('#c-unload-address').val() || '-');
+        }
+        if (!parsed.name && !parsed.mobile && !parsed.address && typeof Layer !== 'undefined') {
+            Layer.msg('未识别到内容，请检查粘贴格式（建议包含：姓名 手机 地址）');
+            return;
+        }
+        if (typeof Layer !== 'undefined') {
+            Layer.msg('识别完成，已回填');
+        }
+    }
+
+    // 委托绑定，避免页面局部重绘/重复初始化后按钮失效
+    $(document).off('click.ludanRecognize', '#btn-loading-recognize').on('click.ludanRecognize', '#btn-loading-recognize', function() {
+        doRecognize('loading');
+    });
+    $(document).off('click.ludanRecognize', '#btn-unload-recognize').on('click.ludanRecognize', '#btn-unload-recognize', function() {
+        doRecognize('unload');
+    });
+
+    $(function() {
+        calculateVolume();
+        setInterval(function() { $('#ludan-now').text(new Date().toLocaleString('sv-SE').replace(' ',' ')); }, 1000);
+
+        $('#c-loading-address, #c-loading-name, #c-loading-mobile, #c-unload-address, #c-unload-name, #c-unload-mobile').removeClass('selectpage').removeAttr('data-source');
+
+        // 初始化 nice-validator（避免 submit 时调用不存在的方法）
+        if ($.fn.validator) {
+            try {
+                $('#ludan-form').validator({
+                    theme: 'bootstrap',
+                    invalid: function() {
+                        if (typeof Layer !== 'undefined') Layer.msg('请完善必填项后再保存');
+                    }
+                });
+            } catch (err) {
+                // 校验插件异常不应阻断页面其它功能（如地址识别）
+            }
+        }
+
+        $('#c-unload-name, #c-unload-mobile, #c-unload-address').on('input', function() {
+            $('#dest-name').text($('#c-unload-name').val() || '-');
+            $('#dest-phone').text($('#c-unload-mobile').val() || '-');
+            $('#dest-address').text($('#c-unload-address').val() || '-');
+        });
+
+        $('input[name="row[delivery]"]').off('change.ludan').on('change.ludan', function() {
+            $('#cod-fields').toggle($(this).val() == '1');
+        });
+
+        $('#btn-upload-local').off('click.ludan').on('click.ludan', function() {
+            if (!window.Fast || !Fast.api || !Fast.api.open) {
+                if (typeof Layer !== 'undefined') Layer.msg('缺少上传组件（Fast.api.open 未加载）');
+                return;
+            }
+            Fast.api.open('general/attachment/select?multiple=0&mimetype=image', '选择图片', { callback: function(data) {
+                if (data && data.url) { $('#c-goods_image').val(data.url); $('#upload-preview').html('<img src="' + data.url + '" style="max-height:60px;">'); }
+            }});
+        });
+
+        var ludanSubmitting = false;
+        $('#ludan-form').off('submit.ludan').on('submit.ludan', function(e) {
+            e.preventDefault();
+            var $form = $(this);
+            if (ludanSubmitting || window.__ludanSubmittingGlobal) return false;
+            if ($.fn.isValid && !$form.isValid()) {
+                if (typeof Layer !== 'undefined') Layer.msg('请完善必填项后再保存');
+                return;
+            }
+            var $btn = $form.find('button[type="submit"]');
+            ludanSubmitting = true;
+            window.__ludanSubmittingGlobal = true;
+            $btn.prop('disabled', true);
+            if (typeof Layer !== 'undefined') Layer.msg('保存中…');
+            $.ajax({
+                url: $form.attr('action'),
+                type: 'POST',
+                data: $form.serialize(),
+                dataType: 'json',
+                success: function(ret) {
+                    ludanSubmitting = false;
+                    window.__ludanSubmittingGlobal = false;
+                    $btn.prop('disabled', false);
+                    if (ret.code === 1) {
+                        if (ret.data && ret.data.orderid) {
+                            $('#display-orderid').val(ret.data.orderid);
+                        }
+                        if (ret.data && ret.data.submit_token) {
+                            $('#c-submit-token').val(ret.data.submit_token);
+                        }
+                        if (typeof Layer !== 'undefined') {
+                            Layer.msg('保存成功' + (ret.data && ret.data.orderid ? '，单号：' + ret.data.orderid + (ret.data.pay_price != null ? '，运费：' + ret.data.pay_price : '') : ''));
+                        }
+                    } else {
+                        if (typeof Layer !== 'undefined') Layer.msg(ret.msg || '保存失败');
+                    }
+                },
+                error: function() {
+                    ludanSubmitting = false;
+                    window.__ludanSubmittingGlobal = false;
+                    $btn.prop('disabled', false);
+                    if (typeof Layer !== 'undefined') Layer.msg('请求失败，请重试');
+                }
+            });
+            return false;
+        });
+    });
+    }
+
+    function runLudanWhenRequireReady() {
+        if (window.jQuery) {
+            initLudan(window.jQuery);
+            return;
+        }
+        if (typeof require !== 'function') {
+            setTimeout(runLudanWhenRequireReady, 30);
+            return;
+        }
+        // 仅依赖 jquery；bootstrap 模块在部分环境不存在（404）会导致整页脚本中断
+        require(['jquery'], function($) {
+            initLudan($ || window.jQuery);
+        }, function() {
+            if (window.jQuery) {
+                initLudan(window.jQuery);
+            } else {
+                setTimeout(runLudanWhenRequireReady, 100);
+            }
+        });
+    }
+
+    runLudanWhenRequireReady();
+})();
+</script>

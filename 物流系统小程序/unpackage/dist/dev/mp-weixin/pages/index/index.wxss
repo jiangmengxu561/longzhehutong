@@ -1,0 +1,163 @@
+
+.banners {
+	width: 710rpx;
+	height: 250rpx;
+	margin: 20rpx;
+	border-radius: 20rpx;
+}
+.buttons {
+	margin: 24rpx auto 0;
+	width: 690rpx;
+	height: 88rpx;
+	background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 46rpx;
+	font-weight: bold;
+	font-size: 30rpx;
+	color: #FFFFFF;
+	line-height: 88rpx;
+	text-align: center;
+}
+.buttonx {
+	margin: 38rpx auto 0;
+	width: 690rpx;
+	height: 88rpx;
+	background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 46rpx;
+	font-weight: bold;
+	font-size: 30rpx;
+	color: #FFFFFF;
+	line-height: 88rpx;
+	text-align: center;
+}
+.express-entry-btn{
+	min-width: 140rpx;
+	height: 60rpx;
+	padding: 0 20rpx;
+	background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 30rpx;
+	color: #FFFFFF;
+	font-size: 26rpx;
+	line-height: 60rpx;
+	text-align: center;
+	flex-shrink: 0;
+}
+.ai-order-entry{
+	display: flex;
+	align-items: center;
+	height: 120rpx;
+	padding: 0 20rpx;
+	background: linear-gradient(135deg, #F0F7FF 0%, #E8F3FF 100%);
+	border-radius: 20rpx;
+	border: 2rpx solid #D8E8FF;
+}
+.ai-order-entry__icon{
+	width: 72rpx;
+	height: 72rpx;
+	background: linear-gradient(180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 16rpx;
+	font-weight: bold;
+	font-size: 28rpx;
+	color: #FFFFFF;
+	line-height: 72rpx;
+	text-align: center;
+	flex-shrink: 0;
+}
+.ai-order-entry__content{
+	flex: 1;
+	min-width: 0;
+	margin: 0 16rpx;
+}
+.ai-order-entry__title{
+	font-weight: bold;
+	font-size: 30rpx;
+	color: #333333;
+}
+.ai-order-entry__desc{
+	font-size: 24rpx;
+	color: #888888;
+	margin-top: 8rpx;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.ai-order-entry__arrow{
+	width: 20rpx;
+	height: 20rpx;
+	flex-shrink: 0;
+}
+
+/* 地址行：防止长地址把右侧按钮挤压 */
+.address-main{
+	margin: 0 24rpx;
+	flex: 1;
+	min-width: 0; /* 关键：允许在 flex 中收缩，ellipsis 才生效 */
+	position: relative;
+}
+.address-actions{
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;     /* 关键：右侧按钮不被压缩 */
+	white-space: nowrap; /* 关键：按钮不换行 */
+}
+.address-divider{
+	background-color: #DDDDDD;
+	width: 2rpx;
+	height: 36rpx;
+	margin-right: 14rpx;
+	flex-shrink: 0;
+}
+.address-action{
+	font-size: 26rpx;
+	color: #4878FF;
+	margin-right: 14rpx;
+	flex-shrink: 0;
+}
+.address-action:last-child{
+	margin-right: 0;
+}
+.address-action--stack{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	line-height: 26rpx;
+	font-size: 22rpx;
+	margin-right: 14rpx; /* 覆盖 .address-action:last-child 的影响 */
+}
+.address-action--stack view{
+	line-height: 26rpx;
+}
+.car-type-options{
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 22rpx;
+}
+.car-type-option{
+	display: flex;
+	align-items: center;
+}
+.car-type-radio{
+	width: 32rpx;
+	height: 32rpx;
+}
+.car-type-label{
+	margin-left: 10rpx;
+}
+.express-company-logo{
+	width: 44rpx;
+	height: 44rpx;
+	border-radius: 10rpx;
+	background: #FFFFFF;
+	margin-right: 12rpx;
+	flex-shrink: 0;
+}
+.express-company-name{
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+

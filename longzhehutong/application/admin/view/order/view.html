@@ -1,0 +1,1123 @@
+<div class="form-horizontal" role="form">
+
+    <!-- 抢单归属：哪个线路、哪个调度抢的 -->
+    {if $row.grab_line || $row.grab_dispatch}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">抢单信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">抢单线路:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input class="form-control" type="text" value="{$row.grab_line|default='-'|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">抢单调度:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input class="form-control" type="text" value="{$row.grab_dispatch|default='-'|htmlentities}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    <!-- 地址信息 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">地址信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">装货地址:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-loading" class="form-control" type="text" value="{$row.loading|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">卸货地址:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-unload" class="form-control" type="text" value="{$row.unload|htmlentities}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">专线信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">{:__('物流名称')}:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipping_logistics_name" class="form-control" type="text" value="{$row.shipping_logistics_name|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">{:__('专线起点地址')}:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipping_logistics_address" class="form-control" type="text" value="{$row.shipping_logistics_address|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">{:__('专线起点电话')}:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipping_logistics_mobile" class="form-control" type="text" value="{$row.shipping_logistics_mobile|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">{:__('专线终点地址')}:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-arrival_logistics_address" class="form-control" type="text" value="{$row.arrival_logistics_address|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">{:__('专线终点电话')}:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-arrival_logistics_mobile" class="form-control" type="text" value="{$row.arrival_logistics_mobile|htmlentities}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 找车类型 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">找车类型</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">找车类型:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="findCarTypeList" item="vo"}
+                        <label for="row[find_car_type]-{$key}" style="margin-right: 20px;">
+                            <input id="row[find_car_type]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.find_car_type"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发票 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">发票</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">发票:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="isinvoiceList" item="vo"}
+                        <label for="row[isinvoice]-{$key}" style="margin-right: 20px;">
+                            <input id="row[isinvoice]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.isinvoice"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 货物信息 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">货物信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">货物类型:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-goods_type_id" class="form-control" type="text" value="{$row.goods_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">货物名称:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-goods_name" class="form-control text-center" type="text" value="{$row.goods_name|htmlentities}" readonly style="width: 200px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">货物图片:</label>
+                <div class="col-xs-12 col-sm-8">
+                    {if condition="!empty($row.goods_image)"}
+                    <a href="{$row.goods_image|cdnurl}" target="_blank" class="img-thumbnail"><img src="{$row.goods_image|cdnurl}" alt="货物图片" style="max-width:120px;max-height:120px;margin:2px;" onerror="this.style.display='none'"></a>
+                    {else/}
+                    <span class="text-muted">暂无图片</span>
+                    {/if}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">数量:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-quantity" class="form-control text-center" type="text" value="{$row.quantity|htmlentities}" readonly style="width: 200px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">尺寸（厘米）:</label>
+                <div class="col-xs-12 col-sm-8">
+                    {if condition="!empty($row.dimensions) && is_array($row.dimensions)"}
+                    {volist name="row.dimensions" id="dimension"}
+                    <div class="row" style="margin-bottom: 10px;">
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">长:</label>
+                            <input class="form-control" type="text" value="{$dimension.long|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">宽:</label>
+                            <input class="form-control" type="text" value="{$dimension.wide|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">高:</label>
+                            <input class="form-control" type="text" value="{$dimension.hige|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                    </div>
+                    {/volist}
+                    {else/}
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">长:</label>
+                            <input class="form-control" type="text" value="{$row.long|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">宽:</label>
+                            <input class="form-control" type="text" value="{$row.wide|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">高:</label>
+                            <input class="form-control" type="text" value="{$row.hige|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                    </div>
+                    {/if}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总重量（吨）:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-weight" class="form-control" type="text" value="{$row.weight|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总方位（立方米）:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-direction" class="form-control" type="text" value="{$row.direction|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">包装方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    {if condition="!empty($row.packaging_id) && is_array($row.packaging_id)"}
+                    {volist name="row.packaging_id" id="pack"}
+                    <div class="form-control" style="margin-bottom: 6px;" readonly>
+                        {$pack.name|htmlentities} × {$pack.quantity|htmlentities}
+                    </div>
+                    {/volist}
+                    {else /}
+                    <input id="c-packaging_id" class="form-control" type="text" value="" readonly>
+                    {/if}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 车型选择 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">选择车型</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">车型:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-car_type_id" class="form-control" type="text" value="{$row.car_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 付款方式 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">付款方式</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">付款方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="payTypeList" item="vo"}
+                        <label for="row[pay_type]-{$key}" style="margin-right: 20px;">
+                            <input id="row[pay_type]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.pay_type"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">到货付款方:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {if condition="isset($getPayPartyList)"}
+                        {foreach name="getPayPartyList" item="vo"}
+                        <label for="row[pay_type]-{$key}" style="margin-right: 20px;">
+                            <input id="row[pay_party]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.pay_party"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                        {/if}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 发货时间 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">发货时间</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">最早发货时间:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-earliest_time" class="form-control" type="text" value="{:$row.earliest_time?datetime($row.earliest_time):''}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">最晚发货时间:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-latest_time" class="form-control" type="text" value="{:$row.latest_time?datetime($row.latest_time):''}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 其他运输要求 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">其他运输要求</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">其他运输要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="isrequirementsList" item="vo"}
+                        <label for="row[isrequirements]-{$key}" style="margin-right: 20px;">
+                            <input id="row[isrequirements]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.isrequirements"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 服务选项和费用信息（仅当“其他运输要求”为“有”时展示） -->
+    {if condition="$row.isrequirements === 1 || $row.isrequirements === '1'"}
+    <div id="service-options-panel" class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">服务选项</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">提货要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-deliveryrequirements_id" class="form-control" type="text" value="{$row.deliveryrequirements_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">专线装货要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-loadingrequirements_id" class="form-control" type="text" value="{$row.loadingrequirements_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-delivery_type_id" class="form-control" type="text" value="{$row.delivery_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">回单:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-receipt_type_id" class="form-control" type="text" value="{$row.receipt_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">服务方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-service" class="form-control" type="text" value="{foreach name='serviceList' item='vo'}{if condition='$key eq $row.service'}{$vo}{/if}{/foreach}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">拆包服务:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-unpack_id" class="form-control" type="text" value="{$row.unpack_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">控货要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-control" class="form-control" type="text" value="{foreach name='controlList' item='vo'}{if condition='$key eq $row.control'}{$vo}{/if}{/foreach}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">其他费用:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-other_id" class="form-control" type="text" value="{$row.other_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">备注:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-break" class="form-control" type="text" value="{$row.break|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">短信通知:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-text_message" class="form-control" type="text" value="{foreach name='textMessageList' item='vo'}{if condition='$key eq $row.text_message'}{$vo}{/if}{/foreach}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    <!-- 代收货款 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">代收货款</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">是否代收货款:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="deliveryList" item="vo"}
+                        <label for="row[delivery]-{$key}" style="margin-right: 20px;">
+                            <input id="row[delivery]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.delivery"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+            <div id="cod-fields" style="display: {in name='row.delivery' value='1'}block{else/}none{/in};">
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">代收金额:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-behalf_price" class="form-control" type="text" value="{$charge.behalf_price|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">银行网点:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-bank_branch" class="form-control" type="text" value="{$charge.bank_branch|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">开户账号:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-open_number" class="form-control" type="text" value="{$charge.open_number|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">银行类型:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-bank_type" class="form-control" type="text" value="{$charge.bank_type|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">开户名:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-open_name" class="form-control" type="text" value="{$charge.open_name|default=''}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单金额信息 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">订单金额信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总运费:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pay_price" class="form-control" type="number" step="0.01" value="{$row.pay_price|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总成本:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-cost_cont" class="form-control" type="text" value="{$row.cost_cont|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">公司利润:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-company_profit" class="form-control" type="text" value="{$row.company_profit|default=''}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户实际支付专线金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-logistics_cost" class="form-control" type="text" value="{$row.logistics_cost|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">专线金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-logistics_driver_cost" class="form-control" type="text" value="{$row.logistics_driver_cost|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户实际支付取货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_fee" class="form-control" type="text" value="{$row.pickup_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">取货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_driver_fee" class="form-control" type="text" value="{$row.pickup_driver_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">取货司机距离:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_distance" class="form-control" type="text" value="{$row.pickup_distance|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">取货司机税点:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_tax_point" class="form-control" type="text" value="{$row.pickup_tax_point|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户实际支付送货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipment_fee" class="form-control" type="text" value="{$row.shipment_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipment_driver_fee" class="form-control" type="text" value="{$row.shipment_driver_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货司机距离:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipmenty_distance" class="form-control" type="text" value="{$row.shipmenty_distance|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货司机税点:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipment_tax_point" class="form-control" type="text" value="{$row.shipment_tax_point|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">信息费:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-information" class="form-control" step="0.01" name="row[information]" type="number" value="{$row.information|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">平台抽佣金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-platform_commission" class="form-control" step="0.01" type="number" value="{$row.platform_commission|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">不可退定金:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-deposit" class="form-control" step="0.01" name="row[deposit]" type="number" value="{$row.deposit|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">支付时间:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pay_time" class="form-control" type="text" value="{:$row.pay_time?datetime($row.pay_time):''}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单状态 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">订单状态</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">支付状态:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="payStatusList" item="vo"}
+                        <label for="row[pay_status]-{$key}" style="margin-right: 20px;">
+                            <input id="row[pay_status]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.pay_status"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="button" class="btn btn-default btn-embossed" onclick="Layer.closeAll();">{:__('Close')}</button>
+        </div>
+    </div>
+</div>
+
+<div class="form-horizontal" role="form">
+
+    <!-- 地址信息 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">地址信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">装货地址:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-loading" class="form-control" type="text" value="{$row.loading|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">卸货地址:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-unload" class="form-control" type="text" value="{$row.unload|htmlentities}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">专线信息</h4>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-2">{:__('专线起点地址')}:</label>
+            <div class="col-xs-12 col-sm-8">
+                <input id="c-shipping_logistics_address" class="form-control" type="text" value="{$row.shipping_logistics_address|htmlentities}" readonly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-2">{:__('专线起点电话')}:</label>
+            <div class="col-xs-12 col-sm-8">
+                <input id="c-shipping_logistics_mobile" class="form-control" type="text" value="{$row.shipping_logistics_mobile|htmlentities}" readonly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-2">{:__('专线终点地址')}:</label>
+            <div class="col-xs-12 col-sm-8">
+                <input id="c-arrival_logistics_address" class="form-control" type="text" value="{$row.arrival_logistics_address|htmlentities}" readonly>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-12 col-sm-2">{:__('专线终点电话')}:</label>
+            <div class="col-xs-12 col-sm-8">
+                <input id="c-arrival_logistics_mobile" class="form-control" type="text" value="{$row.arrival_logistics_mobile|htmlentities}" readonly>
+            </div>
+        </div>
+    </div>
+    <!-- 找车类型 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">找车类型</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">找车类型:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="findCarTypeList" item="vo"}
+                        <label for="row[find_car_type]-{$key}" style="margin-right: 20px;">
+                            <input id="row[find_car_type]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.find_car_type"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发票 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">发票</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">发票:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="isinvoiceList" item="vo"}
+                        <label for="row[isinvoice]-{$key}" style="margin-right: 20px;">
+                            <input id="row[isinvoice]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.isinvoice"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 货物信息 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">货物信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">货物类型:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-goods_type_id" class="form-control" type="text" value="{$row.goods_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">货物名称:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-goods_name" class="form-control text-center" type="text" value="{$row.goods_name|htmlentities}" readonly style="width: 200px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">数量:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-quantity" class="form-control text-center" type="text" value="{$row.quantity|htmlentities}" readonly style="width: 200px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">尺寸（厘米）:</label>
+                <div class="col-xs-12 col-sm-8">
+                    {if condition="!empty($row.dimensions) && is_array($row.dimensions)"}
+                    {volist name="row.dimensions" id="dimension"}
+                    <div class="row" style="margin-bottom: 10px;">
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">长:</label>
+                            <input class="form-control" type="text" value="{$dimension.long|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">宽:</label>
+                            <input class="form-control" type="text" value="{$dimension.wide|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">高:</label>
+                            <input class="form-control" type="text" value="{$dimension.hige|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                    </div>
+                    {/volist}
+                    {else/}
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">长:</label>
+                            <input class="form-control" type="text" value="{$row.long|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">宽:</label>
+                            <input class="form-control" type="text" value="{$row.wide|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                        <div class="col-xs-4">
+                            <label style="font-weight: normal; margin-right: 5px;">高:</label>
+                            <input class="form-control" type="text" value="{$row.hige|htmlentities}" readonly style="display: inline-block; width: calc(100% - 40px);">
+                        </div>
+                    </div>
+                    {/if}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总重量（吨）:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-weight" class="form-control" type="text" value="{$row.weight|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总方位（立方米）:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-direction" class="form-control" type="text" value="{$row.direction|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">包装方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    {if condition="!empty($row.packaging_id) && is_array($row.packaging_id)"}
+                    {volist name="row.packaging_id" id="pack"}
+                    <div class="form-control" style="margin-bottom: 6px;" readonly>
+                        {$pack.name|htmlentities} × {$pack.quantity|htmlentities}
+                    </div>
+                    {/volist}
+                    {else /}
+                    <input id="c-packaging_id" class="form-control" type="text" value="" readonly>
+                    {/if}
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">货物图片:</label>
+                <div class="col-xs-12 col-sm-8">
+                    {if condition="!empty($row.goods_image)"}
+                    <a href="{$row.goods_image|cdnurl}" target="_blank" class="img-thumbnail"><img src="{$row.goods_image|cdnurl}" alt="货物图片" style="max-width:120px;max-height:120px;margin:2px;" onerror="this.style.display='none'"></a>
+                    {else/}
+                    <span class="text-muted">暂无图片</span>
+                    {/if}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 车型选择 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">选择车型</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">车型:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-car_type_id" class="form-control" type="text" value="{$row.car_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 付款方式 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">付款方式</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">付款方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="payTypeList" item="vo"}
+                        <label for="row[pay_type]-{$key}" style="margin-right: 20px;">
+                            <input id="row[pay_type]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.pay_type"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">到货付款方:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {if condition="isset($getPayPartyList)"}
+                        {foreach name="getPayPartyList" item="vo"}
+                        <label for="row[pay_type]-{$key}" style="margin-right: 20px;">
+                            <input id="row[pay_party]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.pay_party"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                        {/if}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 发货时间 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">发货时间</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">最早发货时间:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-earliest_time" class="form-control" type="text" value="{:$row.earliest_time?datetime($row.earliest_time):''}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">最晚发货时间:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-latest_time" class="form-control" type="text" value="{:$row.latest_time?datetime($row.latest_time):''}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 其他运输要求 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">其他运输要求</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">其他运输要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="isrequirementsList" item="vo"}
+                        <label for="row[isrequirements]-{$key}" style="margin-right: 20px;">
+                            <input id="row[isrequirements]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.isrequirements"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 服务选项和费用信息（仅当“其他运输要求”为“有”时展示） -->
+    {if condition="$row.isrequirements === 1 || $row.isrequirements === '1'"}
+    <div id="service-options-panel" class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">服务选项</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">提货要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-deliveryrequirements_id" class="form-control" type="text" value="{$row.deliveryrequirements_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">专线装货要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-loadingrequirements_id" class="form-control" type="text" value="{$row.loadingrequirements_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-delivery_type_id" class="form-control" type="text" value="{$row.delivery_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">回单:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-receipt_type_id" class="form-control" type="text" value="{$row.receipt_type_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">服务方式:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-service" class="form-control" type="text" value="{foreach name='serviceList' item='vo'}{if condition='$key eq $row.service'}{$vo}{/if}{/foreach}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">拆包服务:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-unpack_id" class="form-control" type="text" value="{$row.unpack_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">控货要求:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-control" class="form-control" type="text" value="{foreach name='controlList' item='vo'}{if condition='$key eq $row.control'}{$vo}{/if}{/foreach}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">其他费用:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-other_id" class="form-control" type="text" value="{$row.other_id|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">备注:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-break" class="form-control" type="text" value="{$row.break|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">短信通知:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-text_message" class="form-control" type="text" value="{foreach name='textMessageList' item='vo'}{if condition='$key eq $row.text_message'}{$vo}{/if}{/foreach}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    <!-- 代收货款 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">代收货款</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">是否代收货款:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="deliveryList" item="vo"}
+                        <label for="row[delivery]-{$key}" style="margin-right: 20px;">
+                            <input id="row[delivery]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.delivery"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+            <div id="cod-fields" style="display: {in name='row.delivery' value='1'}block{else/}none{/in};">
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">代收金额:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-behalf_price" class="form-control" type="text" value="{$charge.behalf_price|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">银行网点:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-bank_branch" class="form-control" type="text" value="{$charge.bank_branch|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">开户账号:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-open_number" class="form-control" type="text" value="{$charge.open_number|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">银行类型:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-bank_type" class="form-control" type="text" value="{$charge.bank_type|default=''}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">开户名:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input id="c-open_name" class="form-control" type="text" value="{$charge.open_name|default=''}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单金额信息 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">订单金额信息</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总运费:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pay_price" class="form-control" type="text" value="{$row.pay_price|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">总成本:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-cost_cont" class="form-control" type="text" value="{$row.cost_cont|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户实际支付专线金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-logistics_cost" class="form-control" type="text" value="{$row.logistics_cost|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">专线金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-logistics_driver_cost" class="form-control" type="text" value="{$row.logistics_driver_cost|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户实际支付取货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_fee" class="form-control" type="text" value="{$row.pickup_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">取货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_driver_fee" class="form-control" type="text" value="{$row.pickup_driver_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">取货司机距离:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_distance" class="form-control" type="text" value="{$row.pickup_distance|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">取货司机税点:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pickup_tax_point" class="form-control" type="text" value="{$row.pickup_tax_point|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">用户实际支付送货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipment_fee" class="form-control" type="text" value="{$row.shipment_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货司机金额:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipment_driver_fee" class="form-control" type="text" value="{$row.shipment_driver_fee|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货司机距离:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipmenty_distance" class="form-control" type="text" value="{$row.shipmenty_distance|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">送货司机税点:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-shipment_tax_point" class="form-control" type="text" value="{$row.shipment_tax_point|htmlentities}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">信息费:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-information" class="form-control" step="0.01" name="row[information]" type="number" value="{$row.information|htmlentities}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">不可退定金:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-deposit" class="form-control" step="0.01" name="row[deposit]" type="number" value="{$row.deposit|htmlentities}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">支付时间:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <input id="c-pay_time" class="form-control" type="text" value="{:$row.pay_time?datetime($row.pay_time):''}" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单状态 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">订单状态</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label col-xs-12 col-sm-2">支付状态:</label>
+                <div class="col-xs-12 col-sm-8">
+                    <div class="radio">
+                        {foreach name="payStatusList" item="vo"}
+                        <label for="row[pay_status]-{$key}" style="margin-right: 20px;">
+                            <input id="row[pay_status]-{$key}" type="radio" value="{$key}" {in name="key" value="$row.pay_status"}checked{/in} disabled /> {$vo}
+                        </label>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="button" class="btn btn-default btn-embossed" onclick="Layer.closeAll();">{:__('Close')}</button>
+        </div>
+    </div>
+</div>

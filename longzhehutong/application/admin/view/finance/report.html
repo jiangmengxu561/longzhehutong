@@ -1,0 +1,111 @@
+<div class="panel panel-default panel-intro">
+    <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-bar-chart"></i> 财务报表</h3>
+    </div>
+    <div class="panel-body">
+
+        <!-- 查询条件 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-inline" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>开始日期：</label>
+                        <input type="text" class="form-control datetimepicker" id="startdate" data-date-format="YYYY-MM-DD" placeholder="开始日期" style="width: 150px;">
+                    </div>
+                    <div class="form-group" style="margin-left: 10px;">
+                        <label>结束日期：</label>
+                        <input type="text" class="form-control datetimepicker" id="enddate" data-date-format="YYYY-MM-DD" placeholder="结束日期" style="width: 150px;">
+                    </div>
+                    <div class="form-group" style="margin-left: 10px;">
+                        <button type="button" class="btn btn-primary" id="search-btn">
+                            <i class="fa fa-search"></i> 查询
+                        </button>
+                        <button type="button" class="btn btn-success" id="export-btn">
+                            <i class="fa fa-download"></i> 导出
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="row" id="statistics-cards">
+            <div class="col-md-4">
+                <div class="info-box bg-green">
+                    <span class="info-box-icon"><i class="fa fa-arrow-up"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">总收入(订单总运费)</span>
+                        <span class="info-box-number" id="total-income">￥0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-box bg-red">
+                    <span class="info-box-icon"><i class="fa fa-arrow-down"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">总支出(记账)</span>
+                        <span class="info-box-number" id="total-expense">￥0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-box bg-blue">
+                    <span class="info-box-icon"><i class="fa fa-line-chart"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">净利润</span>
+                        <span class="info-box-number" id="net-profit">￥0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+$(function() {
+    // 查询数据
+    function loadData() {
+        var startdate = $('#startdate').val();
+        var enddate = $('#enddate').val();
+
+        $.ajax({
+            url: '{:url("finance/report")}',
+            type: 'GET',
+            data: {
+                startdate: startdate,
+                enddate: enddate
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.code == 1) {
+                    updateStatistics(response.statistics);
+                } else {
+                    Toastr.error(response.msg || '获取数据失败');
+                }
+            }
+        });
+    }
+
+    // 更新统计数据
+    function updateStatistics(stats) {
+        $('#total-income').text('￥' + (parseFloat(stats.total_income) || 0).toFixed(2));
+        $('#total-expense').text('￥' + (parseFloat(stats.total_expense) || 0).toFixed(2));
+        $('#net-profit').text('￥' + (parseFloat(stats.net_profit) || 0).toFixed(2));
+    }
+
+    // 绑定事件
+    $('#search-btn').click(function() {
+        loadData();
+    });
+
+    $('#export-btn').click(function() {
+        var startdate = $('#startdate').val();
+        var enddate = $('#enddate').val();
+        window.open('{:url("finance/export")}?startdate=' + startdate + '&enddate=' + enddate);
+    });
+
+    // 页面加载默认查询
+    loadData();
+});
+</script>

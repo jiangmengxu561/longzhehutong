@@ -1,0 +1,43 @@
+<div class="panel panel-default panel-intro">
+    <div class="panel-heading">
+
+        <div class="panel-lead"><em> 用于检测文件是否被恶意修改【本地缓存一天，如有需要可清除缓存再操作】</em>
+
+            <br/>
+            {if $verifi_data}
+            <a href="{:url('webscan.verifies/bianli')}" class="btn btn-primary btn-refresh" title="立即校验"><i class="fa fa-search"></i> 立即校验</a>
+            {else/}
+            <a href="{:url('webscan.verifies/build')}" class="btn btn-primary " title="初始化校验数据"><i class="fa fa-cloud-download"></i> 初始化校验数据</a>
+            {/if}
+        </div>
+
+    </div>
+
+    <div class="panel-body">
+        <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade active in" id="one">
+                <div class="widget-body no-padding">
+                    <div id="toolbar" class="toolbar">
+                        <a href="javascript:;" class=" btn-refresh" title="刷新"> 检验不一致文件：</a>
+                        <br/>
+                        <br/>
+                        <div class="dropdown btn-group">
+                            <a class="btn btn-primary btn-more dropdown-toggle btn-disabled disabled" data-toggle="dropdown"><i class="fa fa-cog"></i> 批量操作</a>
+                            <ul class="dropdown-menu text-left" role="menu">
+                                <li><a class="btn btn-link btn-multi btn-disabled disabled" data-url="webscan/verifies/trusts" href="javascript:;" data-params="status=normal"><i class="fa fa-exclamation-triangle"></i> 信任</a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <table id="table" class="table table-striped table-bordered table-hover"
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+

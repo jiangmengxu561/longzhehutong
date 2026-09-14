@@ -1,0 +1,42 @@
+<div class="panel panel-default panel-intro">
+    {:build_heading()}
+    <div class="panel-body">
+        <div class="row" style="margin-bottom: 15px;">
+            <div class="col-md-12">
+                <div class="form-inline">
+                    <div class="form-group" id="recharge-btn-wrap">
+                        <button type="button" class="btn btn-primary" id="recharge-btn"><i class="fa fa-plus"></i> 充值备用金</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 10px;">
+            <div class="col-md-12">
+                <div class="form-inline">
+                    <div class="form-group">
+                        <select id="reserve-role" class="form-control">
+                            <option value="all">全部角色</option>
+                            <option value="line">线路</option>
+                            <option value="dispatch">调度</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-left: 10px;">
+                        <span class="text-muted">线路备用金用于专车和小票快运，调度备用金用于配车。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="reserve-summary" style="margin-bottom: 15px;"></div>
+        <div class="row" style="margin-bottom: 10px;">
+            <div class="col-md-12 text-muted">
+                当前列表按所选角色筛选展示；线路和调度都支持独立充值与流水查看。
+            </div>
+        </div>
+        <div class="row" id="reserve-summary" style="margin-bottom: 15px;"></div>
+        <div class="row">
+            <div class="col-md-12">
+                <table id="table" class="table table-striped table-bordered table-hover table-nowrap" width="100%"></table>
+            </div>
+        </div>
+    </div>
+</div>

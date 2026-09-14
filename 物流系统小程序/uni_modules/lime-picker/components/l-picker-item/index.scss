@@ -1,0 +1,91 @@
+@import '~@/uni_modules/lime-style/index.scss';
+/* #ifdef  uniVersion >= 4.75 */ 
+$use-css-var: true;
+/* #endif */
+
+$item: #{$prefix}-picker-item;
+
+$picker-group-height: create-var(picker-group-height, 200px);
+$picker-indicator-bg-color: create-var(picker-indicator-bg-color, $fill-4);
+$picker-indicator-border-radius: create-var(picker-indicator-border-radius, 6px);
+
+$picker-item-height: create-var(picker-item-height, 50px);
+$picker-item-active-color: create-var(picker-item-active-color, $text-color-1);
+$picker-item-active-font-weight: create-var(picker-item-active-font-weight, 700);
+$picker-item-color: create-var(picker-item-color, $text-color-1);
+$picker-item-font-size: create-var(picker-item-font-size, $font-size-md);
+$picker-mask-top-color: create-var(picker-mask-top-color, white);
+$picker-mask-bottom-color: create-var(picker-mask-bottom-color, rgba(36, 36, 36, 0));
+
+
+/* #ifndef UNI-APP-X && APP */
+:host {
+	flex: 1;
+	display: flex;
+}
+/* #endif */
+
+
+.#{$item} {
+	/* #ifndef UNI-APP-X && APP */
+	// uniapp x鸿蒙这个设置导致选中项下边黑影
+	&__mask {
+		background-image:
+			linear-gradient(180deg, $picker-mask-top-color, $picker-mask-bottom-color),
+			linear-gradient(0deg,   $picker-mask-top-color, $picker-mask-bottom-color)
+	}
+	/* #endif */
+	&__group {
+		/* #ifdef WEB */
+		:deep(.uni-picker-view-content) {
+			// 300ms
+			transition-duration: var(--picker-duration, 0);
+		}
+		/* #endif */
+		flex: 1;
+		
+		// height: $picker-group-height;
+		&-item {
+			height: $picker-item-height;
+			line-height: $picker-item-height;
+			text-align: center;
+			/* #ifndef UNI-APP-X && APP */
+			display: flex;
+			justify-content: center;
+			/* #endif */
+			transition-duration: 100ms;
+			transition-property: font-weight, color;
+			transition-timing-function: linear;
+			font-weight: 400;
+			color: $picker-item-color;
+			font-size: $picker-item-font-size;
+			white-space: nowrap;
+			&--active {
+				color: $picker-item-active-color;
+				font-weight: $picker-item-active-font-weight;
+			}
+		}
+	}
+	&__wrapper {
+		width: 100%;
+		// background-color: red;
+	}
+	&__indicator {
+	    // position: absolute;
+	 //    left: 0rpx;
+	 //    right: 0rpx;
+		
+		// width: auto;
+		// height: $picker-item-height;
+	 //    // top: 144rpx;
+	 //    pointer-events: none;
+	 //    background-color: $picker-indicator-bg-color;
+	    // border-radius: $picker-indicator-border-radius;
+		/* #ifndef UNI-APP-X && APP */
+		&:after,&:before{
+			display: none;
+		}
+		/* #endif */
+	}
+}
+

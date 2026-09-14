@@ -1,0 +1,319 @@
+@charset "UTF-8";
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+@property --l-loading-start {
+  syntax: "<length-percentage>";
+  initial-value: 1%;
+  inherits: false;
+}
+@property --l-loading-end {
+  syntax: "<length-percentage>";
+  initial-value: 1%;
+  inherits: false;
+}
+@property --l-left {
+  syntax: "<length-percentage>";
+  initial-value: 1%;
+  inherits: false;
+}
+@property --l-loadding-ball-size {
+  syntax: "<length> | <length-percentage>";
+  inherits: false;
+}
+:host {
+  display: inline-flex;
+}
+.l-loading {
+  position: relative;
+  color: var(--l-loading-color, var(--l-primary-color, #3283ff));
+  font-size: 0;
+  vertical-align: middle;
+}
+.l-loading--ball {
+  display: inline-flex;
+  align-items: center;
+}
+.l-loading--ball .l-loading__ball {
+  position: relative;
+  -webkit-perspective: calc(var(--l-loadding-ball-size) * 4);
+          perspective: calc(var(--l-loadding-ball-size) * 4);
+  -webkit-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+}
+.l-loading--ball .l-loading__ball:before {
+  background-color: var(--l-primary-color, #3283ff);
+  left: 0%;
+  -webkit-animation-name: l-ball-before;
+          animation-name: l-ball-before;
+}
+.l-loading--ball .l-loading__ball:after {
+  right: 0;
+  background-color: red;
+  -webkit-animation-name: l-ball-after;
+          animation-name: l-ball-after;
+}
+.l-loading--ball .l-loading__ball:before, .l-loading--ball .l-loading__ball:after {
+  top: 0;
+  content: "";
+  position: absolute;
+  height: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  -webkit-animation-iteration-count: infinite;
+          animation-iteration-count: infinite;
+  -webkit-animation-delay: -100ms;
+          animation-delay: -100ms;
+  -webkit-animation-duration: 900ms;
+          animation-duration: 900ms;
+  mix-blend-mode: darken;
+  -webkit-animation-play-state: var(--l-play-state, running);
+          animation-play-state: var(--l-play-state, running);
+}
+.l-loading--circular .l-loading__circular {
+  display: inline-block;
+  position: relative;
+  -webkit-animation: l-rotate var(--l-loading-duration, 2s) linear infinite;
+          animation: l-rotate var(--l-loading-duration, 2s) linear infinite;
+  vertical-align: middle;
+  -webkit-animation-play-state: var(--l-play-state, running);
+          animation-play-state: var(--l-play-state, running);
+}
+.l-loading--circular .l-loading__circular:before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-image: conic-gradient(transparent 0%, transparent var(--l-loading-start, 0%), var(--l-loading-color-1, currentColor) var(--l-loading-start, 0%), var(--l-loading-color-2, currentColor) var(--l-loading-end, 0%), transparent var(--l-loading-end, 0%), transparent 100%);
+  mask: radial-gradient(closest-side, transparent calc(80% - 1px), #fff 80%);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(80% - 1px), #fff 80%);
+  -webkit-animation: l-circular 2.5s ease-in-out infinite;
+          animation: l-circular 2.5s ease-in-out infinite;
+  -webkit-transform: rotate(90deg);
+          transform: rotate(90deg);
+  -webkit-animation-play-state: var(--l-play-state, running);
+          animation-play-state: var(--l-play-state, running);
+}
+.l-loading--spinner .l-loading__spinner {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  -webkit-animation-timing-function: steps(12);
+          animation-timing-function: steps(12);
+  -webkit-animation: l-rotate 0.8s linear infinite;
+          animation: l-rotate 0.8s linear infinite;
+  -webkit-animation-play-state: var(--l-play-state, running);
+          animation-play-state: var(--l-play-state, running);
+}
+.l-loading--spinner .l-loading__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-transform: rotate(calc(var(--l-loading-dot, 1) * 30deg));
+          transform: rotate(calc(var(--l-loading-dot, 1) * 30deg));
+  opacity: calc(var(--l-loading-dot, 1) / 12);
+}
+.l-loading--spinner .l-loading__dot::before {
+  display: block;
+  width: 5rpx;
+  height: 25%;
+  margin: 0 auto;
+  background-color: currentColor;
+  border-radius: 40%;
+  content: " ";
+}
+.l-loading__text {
+  display: inline-block;
+  margin-left: var(--l-spacer-xs, 8px);
+  color: var(--l-loading-text-color, var(--l-text-color-3, #00000073));
+  font-size: var(--l-loading-font-size, var(--l-font-size, 14px));
+  vertical-align: middle;
+}
+.l-loading.is-vertical {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.l-loading.is-vertical .l-loading__text {
+  margin: var(--l-spacer-tn, 4px) 0 0;
+}
+.l-loading__ball, .l-loading__circular, .l-loading__spinner {
+  width: var(--l-loading-size, 20px);
+  height: var(--l-loading-size, 20px);
+}
+@-webkit-keyframes l-circular {
+0% {
+    --l-loading-start: 0%;
+    --l-loading-end: 0%;
+}
+50% {
+    --l-loading-start: 0%;
+    --l-loading-end: 100%;
+}
+100% {
+    --l-loading-start: 100%;
+    --l-loading-end: 100%;
+}
+}
+@keyframes l-circular {
+0% {
+    --l-loading-start: 0%;
+    --l-loading-end: 0%;
+}
+50% {
+    --l-loading-start: 0%;
+    --l-loading-end: 100%;
+}
+100% {
+    --l-loading-start: 100%;
+    --l-loading-end: 100%;
+}
+}
+@-webkit-keyframes l-rotate {
+to {
+    -webkit-transform: rotate(1turn);
+            transform: rotate(1turn);
+}
+}
+@keyframes l-rotate {
+to {
+    -webkit-transform: rotate(1turn);
+            transform: rotate(1turn);
+}
+}
+@-webkit-keyframes l-ball-before {
+0% {
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+}
+25% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2);
+    -webkit-transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+            transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+}
+50% {
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)));
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+    -webkit-transform: translate3d(var(--l-left), 0, 0);
+            transform: translate3d(var(--l-left), 0, 0);
+}
+75% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2);
+    -webkit-transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+            transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+}
+}
+@keyframes l-ball-before {
+0% {
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+}
+25% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2);
+    -webkit-transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+            transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+}
+50% {
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)));
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+    -webkit-transform: translate3d(var(--l-left), 0, 0);
+            transform: translate3d(var(--l-left), 0, 0);
+}
+75% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2);
+    -webkit-transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+            transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+}
+}
+@-webkit-keyframes l-ball-after {
+0% {
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+}
+25% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2 * -1);
+    -webkit-transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+            transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+}
+50% {
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) * -1);
+    -webkit-transform: translate3d(var(--l-left), 0, 0);
+            transform: translate3d(var(--l-left), 0, 0);
+}
+75% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2 * -1);
+    -webkit-transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+            transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+}
+}
+@keyframes l-ball-after {
+0% {
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+}
+25% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2 * -1);
+    -webkit-transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+            transform: translate3d(var(--l-left), 0, calc(var(--l-loadding-ball-size) * -1));
+}
+50% {
+    -webkit-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) * -1);
+    -webkit-transform: translate3d(var(--l-left), 0, 0);
+            transform: translate3d(var(--l-left), 0, 0);
+}
+75% {
+    -webkit-animation-timing-function: ease-out;
+            animation-timing-function: ease-out;
+    --l-left: calc((var(--l-loadding-ball-size,100%) * 2.1 - var(--l-loadding-ball-size,100%)) / 2 * -1);
+    -webkit-transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+            transform: translate3d(var(--l-left), 0, var(--l-loadding-ball-size));
+}
+}

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "订单",
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
+}

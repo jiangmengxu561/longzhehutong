@@ -1,0 +1,237 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Loading')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-loading" class="form-control" name="row[loading]" type="text" value="{$row.loading|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Unload')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-unload" class="form-control" name="row[unload]" type="text" value="{$row.unload|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Find_car_type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+
+            <select  id="c-find_car_type" class="form-control selectpicker" name="row[find_car_type]">
+                {foreach name="findCarTypeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.find_car_type"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Quantity')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-quantity" class="form-control" name="row[quantity]" type="text" value="{$row.quantity|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Weight')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-weight" class="form-control" name="row[weight]" type="number" value="{$row.weight|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Long')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-long" class="form-control" name="row[long]" type="text" value="{$row.long|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Wide')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-wide" class="form-control" name="row[wide]" type="text" value="{$row.wide|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Hige')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-hige" class="form-control" name="row[hige]" type="text" value="{$row.hige|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Direction')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-direction" class="form-control" name="row[direction]" type="text" value="{$row.direction|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Isinvoice')}:</label>
+        <div class="col-xs-12 col-sm-8">
+
+            <select  id="c-isinvoice" class="form-control selectpicker" name="row[isinvoice]">
+                {foreach name="isinvoiceList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.isinvoice"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Goods_type_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-goods_type_id" data-rule="required" data-source="goods/type/index" class="form-control selectpage" name="row[goods_type_id]" type="text" value="{$row.goods_type_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Packaging_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-packaging_id" data-rule="required" data-source="packaging/index" class="form-control selectpage" name="row[packaging_id]" type="text" value="{$row.packaging_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pay_type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+
+            <select  id="c-pay_type" class="form-control selectpicker" name="row[pay_type]">
+                {foreach name="payTypeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.pay_type"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('信息费')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-information" class="form-control" name="row[information]" type="number" value="{$row.information|default='0'|htmlentities}" placeholder="0">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('不可退定金')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-deposit" class="form-control" name="row[deposit]" type="number" value="{$row.deposit|default='0'|htmlentities}" placeholder="0">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('付款截图')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-information_image" class="form-control" size="50" name="row[information_image]" type="text" value="{$row.information_image|default=''|htmlentities}">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="faupload-information_image" class="btn btn-danger faupload" data-input-id="c-information_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp,image/webp" data-multiple="false" data-preview-id="p-information_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-information_image" class="btn btn-primary fachoose" data-input-id="c-information_image" data-mimetype="image/*" data-multiple="false"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-information_image"></span>
+            </div>
+            <ul class="row list-inline faupload-preview" id="p-information_image"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Delivery')}:</label>
+        <div class="col-xs-12 col-sm-8">
+
+            <select  id="c-delivery" class="form-control selectpicker" name="row[delivery]">
+                {foreach name="deliveryList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.delivery"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Car_type_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-car_type_id" data-rule="required" data-source="car/type/index" class="form-control selectpage" name="row[car_type_id]" type="text" value="{$row.car_type_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Earliest_time')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-earliest_time" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" data-use-current="true" name="row[earliest_time]" type="text" value="{:$row.earliest_time?datetime($row.earliest_time):''}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Latest_time')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-latest_time" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" data-use-current="true" name="row[latest_time]" type="text" value="{:$row.latest_time?datetime($row.latest_time):''}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Isrequirements')}:</label>
+        <div class="col-xs-12 col-sm-8">
+
+            <select  id="c-isrequirements" class="form-control selectpicker" name="row[isrequirements]">
+                {foreach name="isrequirementsList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.isrequirements"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Delivery_type_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-delivery_type_id" data-rule="required" data-source="delivery/type/index" class="form-control selectpage" name="row[delivery_type_id]" type="text" value="{$row.delivery_type_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Receipt_type_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-receipt_type_id" data-rule="required" data-source="receipt/type/index" class="form-control selectpage" name="row[receipt_type_id]" type="text" value="{$row.receipt_type_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Service')}:</label>
+        <div class="col-xs-12 col-sm-8">
+
+            <select  id="c-service" class="form-control selectpicker" name="row[service]">
+                {foreach name="serviceList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.service"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Unpack_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-unpack_id" data-rule="required" data-source="unpack/index" class="form-control selectpage" name="row[unpack_id]" type="text" value="{$row.unpack_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Control')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-control" class="form-control selectpicker" name="row[control]">
+                {foreach name="controlList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.control"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Other_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-other_id" data-rule="required" data-source="other/index" class="form-control selectpage" name="row[other_id]" type="text" value="{$row.other_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Text_message')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select  id="c-text_message" class="form-control selectpicker" name="row[text_message]">
+                {foreach name="textMessageList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.text_message"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Orderid')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-orderid" class="form-control" name="row[orderid]" type="text" value="{$row.orderid|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>

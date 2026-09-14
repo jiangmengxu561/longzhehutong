@@ -1,0 +1,46 @@
+<div class="panel panel-default" style="margin: 20px;">
+    <div class="panel-heading">
+        <h4 class="panel-title">提现关联订单</h4>
+    </div>
+    <div class="panel-body">
+        <div class="row" style="margin-bottom: 15px;">
+            <div class="col-sm-4">
+                <div class="well well-sm" style="margin-bottom: 0;">
+                    <div style="font-size: 12px; color: #666;">提现金额</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #4878FF;">￥{$withdraw.money|htmlentities}</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="well well-sm" style="margin-bottom: 0;">
+                    <div style="font-size: 12px; color: #666;">订单数量</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #333;">{$orderCount|htmlentities}</div>
+                </div>
+            </div>
+            <div class="col-sm-4"> 
+                <div class="well well-sm" style="margin-bottom: 0;">
+                    <div style="font-size: 12px; color: #666;">说明</div>
+                    <div style="font-size: 14px; color: #999; line-height: 1.6;">以下为该提现关联的全部订单明细</div>
+                </div>
+            </div>
+        </div> 
+
+        <div class="list-group">
+            {volist name="orders" id="order"}
+            <div class="list-group-item" style="margin-bottom: 12px; border-radius: 6px;">
+                <div class="row" style="display: flex; align-items: center; flex-wrap: wrap;">
+                    <div class="col-sm-9" style="padding-bottom: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 6px;">订单号：{$order.orderid|htmlentities}</div>
+                        <div style="color: #666; font-size: 13px; line-height: 1.8;">
+                            <div>下单时间：{:$order.createtime?datetime($order.createtime):''}</div>
+                            <div>金额：￥{$order.pay_price|htmlentities}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 text-right" style="min-width: 160px; padding-left: 0;">
+                        <a class="btn btn-primary btn-sm" href="{:url('withdraw/order_detail_order', ['ids' => $order.id])}" target="_blank">查看订单详情</a>
+                    </div>
+                </div>
+            </div>
+            {/volist}
+        </div>
+    </div>
+</div>

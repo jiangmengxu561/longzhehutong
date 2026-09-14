@@ -1,0 +1,68 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    {:token()}
+
+    <div class="form-group">
+        <label for="c-user_mobile" class="control-label col-xs-12 col-sm-2">用户手机号:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-user_mobile" data-rule="" class="form-control" name="user_mobile" type="text" value="" placeholder="留空或输入0表示全局配置">
+            <span class="help-block">留空或输入0表示全局配置，所有用户生效；输入用户手机号表示仅对该用户生效</span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="c-loading_province" class="control-label col-xs-12 col-sm-2">发货省份 <span class="text-danger">*</span>:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-loading_province" data-rule="required" class="form-control selectpicker" name="row[loading_province]">
+                <option value="">请选择</option>
+                {foreach $provinceList as $province}
+                <option value="{$province}">{$province}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="c-unload_province" class="control-label col-xs-12 col-sm-2">收货省份 <span class="text-danger">*</span>:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-unload_province" data-rule="required" class="form-control selectpicker" name="row[unload_province]">
+                <option value="">请选择</option>
+                {foreach $provinceList as $province}
+                <option value="{$province}">{$province}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="c-logistics_cost_percentage" class="control-label col-xs-12 col-sm-2">线路价格调整百分比:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-logistics_cost_percentage" data-rule="" class="form-control" name="row[logistics_cost_percentage]" type="number" value="0" step="0.01" placeholder="例如：10表示上调10%，-5表示下调5%">
+            <span class="help-block">正数表示上调，负数表示下调，0表示不调整</span>
+        </div>
+    </div>
+
+<!--    <div class="form-group">-->
+<!--        <label for="c-pickup_driver_fee_percentage" class="control-label col-xs-12 col-sm-2">取货司机价格调整百分比:</label>-->
+<!--        <div class="col-xs-12 col-sm-8">-->
+<!--            <input id="c-pickup_driver_fee_percentage" data-rule="" class="form-control" name="row[pickup_driver_fee_percentage]" type="number" value="0" step="0.01" placeholder="例如：10表示上调10%，-5表示下调5%">-->
+<!--            <span class="help-block">正数表示上调，负数表示下调，0表示不调整</span>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    <div class="form-group">-->
+<!--        <label for="c-shipment_driver_fee_percentage" class="control-label col-xs-12 col-sm-2">送货司机价格调整百分比:</label>-->
+<!--        <div class="col-xs-12 col-sm-8">-->
+<!--            <input id="c-shipment_driver_fee_percentage" data-rule="" class="form-control" name="row[shipment_driver_fee_percentage]" type="number" value="0" step="0.01" placeholder="例如：10表示上调10%，-5表示下调5%">-->
+<!--            <span class="help-block">正数表示上调，负数表示下调，0表示不调整</span>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+            <button type="reset" class="btn btn-default btn-embossed">{:__('Reset')}</button>
+        </div>
+    </div>
+</form>
+

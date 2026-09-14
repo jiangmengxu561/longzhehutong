@@ -1,0 +1,122 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <!-- 基本信息，只读展示 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Orderid')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$row.orderid|htmlentities}</p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Title')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$row.title|htmlentities}</p>
+        </div>
+    </div>
+<!--    <div class="form-group">--> 
+<!--        <label class="control-label col-xs-12 col-sm-2">{:__('Modify_type')}:</label>-->
+<!--        <div class="col-xs-12 col-sm-8">-->
+<!--            <p class="form-control-static">{$row.modify_type|htmlentities}</p>-->
+<!--        </div>-->
+<!--    </div>-->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Admin_name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$row.admin_name|htmlentities}</p>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">当时订单物流状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            <p class="form-control-static">{$logisticsStatusText|default=''}</p>
+        </div>
+    </div>
+
+    <!-- 差异明细 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">字段变更明细:</label>
+        <div class="col-xs-12 col-sm-8">
+            {if $diffList}
+            <table class="table table-bordered table-striped table-diff-detail">
+                <thead>
+                <tr>
+                    <th style="width: 22%; min-width: 100px;">字段</th>
+                    <th style="width: 39%;">修改前</th>
+                    <th style="width: 39%;">修改后</th>
+                </tr>
+                </thead>
+                <tbody>
+                {foreach name="diffList" item="item"}
+                <tr>
+                    <td class="diff-field-cell">{:isset($item['label']) && $item['label'] ? htmlentities($item['label']) : htmlentities($item['field'])}</td>
+                    <td class="diff-value-cell">
+                        {if isset($item['oldValueImages']) && $item['oldValueImages']}
+                            {foreach name="item.oldValueImages" item="imgUrl"}
+                            <a href="{$imgUrl}" target="_blank" class="diff-image-wrap"><img src="{$imgUrl}" alt="" class="img-thumbnail" style="max-width:120px;max-height:120px;margin:2px;" onerror="this.style.display='none'"></a>
+                            {/foreach}
+                        {else/}
+                            {$item.oldValue|htmlentities}
+                        {/if}
+                    </td>
+                    <td class="diff-value-cell">
+                        {if isset($item['newValueImages']) && $item['newValueImages']}
+                            {foreach name="item.newValueImages" item="imgUrl"}
+                            <a href="{$imgUrl}" target="_blank" class="diff-image-wrap"><img src="{$imgUrl}" alt="" class="img-thumbnail" style="max-width:120px;max-height:120px;margin:2px;" onerror="this.style.display='none'"></a>
+                            {/foreach}
+                        {else/}
+                            {$item.newValue|htmlentities}
+                        {/if}
+                    </td>
+                </tr>
+                {/foreach}
+                </tbody>
+            </table>
+            <style>
+                .table-diff-detail .diff-field-cell { white-space: normal; word-break: normal; min-width: 100px; vertical-align: middle !important; }
+                .table-diff-detail .diff-value-cell { vertical-align: middle !important; }
+                .table-diff-detail .diff-image-wrap { display: inline-block; margin: 2px; }
+            </style>
+            {else/}
+            <p class="form-control-static text-muted">未检测到字段差异</p>
+            {/if}
+        </div>
+    </div>
+
+    <!-- 审核信息 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">当前审核状态:</label>
+        <div class="col-xs-12 col-sm-8">
+            {switch name="row.audit_status"}
+            {case value="1"}<span class="label label-success">已通过</span>{/case}
+            {case value="2"}<span class="label label-danger">已拒绝</span>{/case}
+            {default /}<span class="label label-warning">待审核</span>
+            {/switch}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">审核操作:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select name="row[audit_status]" id="c-audit_status" class="form-control">
+                <option value="0" {if $row.audit_status==0}selected{/if}>待审核</option>
+                <option value="1" {if $row.audit_status==1}selected{/if}>通过</option>
+                <option value="2" {if $row.audit_status==2}selected{/if}>拒绝</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">审核备注:</label>
+        <div class="col-xs-12 col-sm-8">
+            <textarea class="form-control" rows="3" name="row[audit_remark]" id="c-audit_remark">{$row.audit_remark|htmlentities}</textarea>
+        </div>
+    </div>
+
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed">{:__('OK')}</button>
+        </div>
+    </div>
+</form>

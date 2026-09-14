@@ -1,0 +1,30 @@
+
+.xian {
+	margin:4rpx auto 0;
+	width: 28rpx;
+	height: 6rpx;
+	background: linear-gradient( 180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 4rpx;
+}
+.buttons {
+	width: 138rpx;
+	height: 52rpx;
+	background: linear-gradient( 180deg, #4897FF 0%, #4878FF 100%);
+	border-radius: 26rpx;
+	font-size: 26rpx;
+	color: #FFFFFF;
+	line-height: 52rpx;
+	text-align: center;
+}
+.buttonx{
+	width: 138rpx;
+	height: 52rpx;
+	background: #FFFFFF;
+	border-radius: 26rpx;
+	border: 1rpx solid #CCCCCC;
+	font-size: 26rpx;
+	color: #666666;
+	line-height: 52rpx;
+	text-align: center;
+}
+

@@ -1,0 +1,153 @@
+<form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('User_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-user_id" data-rule="required" min="0" data-source="user/user/index" data-field="nickname" class="form-control selectpage" name="row[user_id]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Mobile')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-mobile" data-rule="required" class="form-control" name="row[mobile]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Loading_address')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-loading_address" data-rule="required" class="form-control" name="row[loading_address]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Unload_address')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-unload_address" data-rule="required" class="form-control" name="row[unload_address]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Weight')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-weight" data-rule="required" class="form-control" step="0.01" name="row[weight]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Direction')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-direction" data-rule="required" class="form-control" step="0.01" name="row[direction]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Car_type_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-car_type_id" data-rule="required" min="0" data-source="car/type/index" class="form-control selectpage" name="row[car_type_id]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Goods_type_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-goods_type_id" data-rule="required" min="0" data-source="goods/type/index" class="form-control selectpage" name="row[goods_type_id]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Logistics_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-logistics_id" data-rule="required" min="0" data-source="logistics/index" class="form-control selectpage" name="row[logistics_id]" type="text" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Quoted_price')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-quoted_price" data-rule="required" class="form-control" step="0.01" name="row[quoted_price]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pay_price')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pay_price" data-rule="required" class="form-control" step="0.01" name="row[pay_price]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Cost_cont')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-cost_cont" data-rule="required" class="form-control" step="0.01" name="row[cost_cont]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Profit')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-profit" data-rule="required" class="form-control" step="0.01" name="row[profit]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('System_profit')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-system_profit" data-rule="required" class="form-control" step="0.01" name="row[system_profit]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Logistics_cost')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-logistics_cost" data-rule="required" class="form-control" step="0.01" name="row[logistics_cost]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Logistics_driver_cost')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-logistics_driver_cost" data-rule="required" class="form-control" step="0.01" name="row[logistics_driver_cost]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pickup_fee')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pickup_fee" data-rule="required" class="form-control" step="0.01" name="row[pickup_fee]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pickup_driver_fee')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pickup_driver_fee" data-rule="required" class="form-control" step="0.01" name="row[pickup_driver_fee]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Shipment_fee')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-shipment_fee" data-rule="required" class="form-control" step="0.01" name="row[shipment_fee]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Shipment_driver_fee')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-shipment_driver_fee" data-rule="required" class="form-control" step="0.01" name="row[shipment_driver_fee]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Pickup_distance')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-pickup_distance" data-rule="required" class="form-control" step="0.01" name="row[pickup_distance]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Logistics_distance')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-logistics_distance" data-rule="required" class="form-control" step="0.01" name="row[logistics_distance]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Shipmenty_distance')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-shipmenty_distance" data-rule="required" class="form-control" step="0.01" name="row[shipmenty_distance]" type="number" value="0.00">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Is_chaxun')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-is_chaxun" class="form-control" name="row[is_chaxun]" type="number" value="0">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,137 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Orderid')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-orderid" class="form-control" name="row[orderid]" type="text" value="{$row.orderid|htmlentities}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-type" class="form-control selectpicker" name="row[type]" disabled>
+                {foreach name="typeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.type"  }selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Tax_point')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-tax_point" class="form-control" name="row[tax_point]" type="text" value="{$row.tax_point|htmlentities}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Company_letterhead')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-company_letterhead" class="form-control" name="row[company_letterhead]" type="text" value="{$row.company_letterhead|htmlentities} " disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Company_tax_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-company_tax_id" data-rule="required" data-source="company/tax/index" class="form-control " name="row[company_tax_id]" type="text" value="{$row.company_tax_id|htmlentities}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Company_email')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-company_email" class="form-control" name="row[company_email]" type="text" value="{$row.company_email|htmlentities}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Company_mobile')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-company_mobile" class="form-control" name="row[company_mobile]" type="text" value="{$row.company_mobile|htmlentities}" disabled>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Bank_deposits')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-bank_deposits" class="form-control" name="row[bank_deposits]" type="text" value="{$row.bank_deposits|htmlentities}" disabled>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Status')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            
+            <div class="radio" >
+            {foreach name="statusList" item="vo"}
+            <label for="row[status]-{$key}"><input id="row[status]-{$key}" name="row[status]" type="radio" value="{$key}" disabled {in name="key" value="$row.status"}checked{/in} /> {$vo}</label>
+            {/foreach}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 上传发票 -->
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">上传发票:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div id="invoice-upload-area">
+                <form id="invoice-form" enctype="multipart/form-data">
+                    <input type="hidden" name="tax_id" value="{$row.id}">
+                    <div class="form-group">
+                        <input type="file" name="invoice_file" id="invoice_file" accept=".jpg,.jpeg,.png,.gif,.pdf" class="form-control">
+                    </div>
+                    <button type="button" class="btn btn-primary" id="upload-btn">
+                        <i class="fa fa-upload"></i> 上传发票
+                    </button>
+                </form>
+            </div>
+            
+            <!-- 显示已上传的发票 -->
+            {if condition="$row.invoice"}
+            <div class="invoice-preview" style="margin-top: 15px;">
+                <p class="text-info"><i class="fa fa-file-o"></i> 已上传发票：</p>
+                <a href="{$row.invoice}" target="_blank" class="btn btn-sm btn-success">
+                    <i class="fa fa-eye"></i> 查看发票
+                </a>
+            </div>
+            {else /}
+            <div class="text-muted" style="margin-top: 10px;">
+                <i class="fa fa-info-circle"></i> 暂未上传发票
+            </div>
+            {/if}
+        </div>
+    </div>
+</form>
+
+<script>
+$(function(){
+    $('#upload-btn').on('click', function(){
+        var formData = new FormData($('#invoice-form')[0]);
+        var fileInput = $('#invoice_file')[0];
+        
+        if (!fileInput.files || fileInput.files.length === 0) {
+            Toastr.warning('请选择要上传的发票文件');
+            return;
+        }
+        
+        $.ajax({
+            url: 'tax/uploadInvoice',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(ret) {
+                if (ret.code == 1) {
+                    Toastr.success(ret.msg);
+                    setTimeout(function(){
+                        parent.layer.closeAll();
+                        parent.$('.btn-refresh').trigger('click');
+                    }, 1500);
+                } else {
+                    Toastr.error(ret.msg);
+                }
+            },
+            error: function(){
+                Toastr.error('上传失败，请重试');
+            }
+        });
+    });
+});
+</script>

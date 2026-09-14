@@ -1,0 +1,1 @@
+.personal .label{display:flex;justify-content:space-between;font-size:30rpx;color:#333}.personal .buttons{position:fixed;left:30rpx;bottom:88rpx;width:690rpx;height:88rpx;background:linear-gradient(180deg,#4897ff,#4878ff);border-radius:50rpx;font-weight:700;font-size:30rpx;color:#fff;line-height:88rpx;text-align:center}

@@ -1,0 +1,99 @@
+<div class="panel panel-default" style="margin: 20px;">
+    <div class="panel-heading">
+        <h4 class="panel-title">订单详情</h4>
+    </div>
+    <div class="panel-body">
+        <div class="row" style="margin-bottom: 15px;">
+            <div class="col-sm-4">
+                <div class="well well-sm" style="margin-bottom: 0;">
+                    <div style="font-size: 12px; color: #666;">订单号</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #333; word-break: break-all;">{$order.orderid|htmlentities}</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="well well-sm" style="margin-bottom: 0;">
+                    <div style="font-size: 12px; color: #666;">下单时间</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #333;">{:$order.createtime?datetime($order.createtime):''}</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="well well-sm" style="margin-bottom: 0;">
+                    <div style="font-size: 12px; color: #666;">订单金额</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #4878FF;">￥{$order.pay_price|htmlentities}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading"><h4 class="panel-title">地址信息</h4></div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">装货地址:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.loading|htmlentities}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">卸货地址:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.unload|htmlentities}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading"><h4 class="panel-title">货物信息</h4></div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">货物名称:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.goods_name|htmlentities}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">数量:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.quantity|htmlentities}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">重量:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.weight|htmlentities}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">车型:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.car_type_id|htmlentities}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading"><h4 class="panel-title">金额信息</h4></div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">总运费:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.pay_price|htmlentities}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">总成本:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.cost_cont|htmlentities}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-12 col-sm-2">支付状态:</label>
+                    <div class="col-xs-12 col-sm-8">
+                        <input class="form-control" type="text" value="{$order.pay_status|htmlentities}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

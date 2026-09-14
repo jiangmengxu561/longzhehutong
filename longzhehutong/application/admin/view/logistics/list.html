@@ -1,0 +1,124 @@
+    <table class="table table-striped">
+        <thead>
+
+        <tr>
+            <th>{:__('选择')}</th>
+            <th>{:__('ID')}</th>
+            <th>{:__('总距离')}</th>
+            <th>{:__('发货省份')}</th>
+            <th>{:__('直达省份')}</th>
+            <th>{:__('发货区物流地址')}</th>
+            <th>{:__('到货区物流地址')}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {volist name="row" id="vo"}
+        <tr>
+            <td><input type="radio" name="selected_row" value="{$vo.id}" required></td>
+            <td>{$vo.id}</td>
+            <td>{$vo.total_distance}</td>
+            <td>{$vo.shipping_province}</td>
+            <td>{$vo.province}</td>
+            <td>{$vo.shipping_logistics_address}</td>
+            <td>{$vo.arrival_logistics_address}</td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+
+    <div class="hide layer-footer">
+        <label class="control-label col-xs-12 col-sm-4"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button id="submitBtn" type="button" class="btn btn-primary btn-embossed">{:__('Submit')}</button>
+        </div>
+    </div>
+
+
+    <script>
+        function getIdsFromUrl() {
+            var url = new URL(window.location.href);
+            var fromQuery = url.searchParams.get('ids');
+            if (fromQuery) return fromQuery;
+            var m = url.pathname.match(/\/ids\/([^\/?]+)/);
+            return m ? m[1] : '';
+        }
+        document.getElementById('submitBtn').addEventListener('click', function () {
+            var checked = document.querySelector('input[name="selected_row"]:checked');
+            if (!checked) {
+                alert('请先选择一条数据');
+                return;
+            }
+
+            // 二次确认
+            if (typeof Layer !== 'undefined' && Layer.confirm) {
+                Layer.confirm('确定要更改路线吗？更改后将重新计算金额和距离。', function(index) {
+                    submitLogistics();
+                    Layer.close(index);
+                });
+            } else {
+                if (!confirm('确定要更改路线吗？更改后将重新计算金额和距离。')) {
+                    return;
+                }
+                submitLogistics();
+            }
+        });
+
+        function submitLogistics() {
+            var checked = document.querySelector('input[name="selected_row"]:checked');
+            var id = checked.value;
+            var ids = getIdsFromUrl();
+            // 根据URL参数判断使用哪个控制器的logistics方法
+            // 如果是从admin/order页面打开的，使用admin/admin/order/logistics
+            // 如果是从order页面打开的，使用admin/order/logistics
+            var url = "{:url('/admin/admin/order/logistics')}";
+
+            var body = new URLSearchParams();
+            body.set('selected_row', id);
+            if (ids) body.set('ids', ids);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: body.toString()
+            })
+                .then(function (res) {
+                    var ctype = res.headers.get('content-type') || '';
+                    if (ctype.indexOf('application/json') === -1) {
+                        return res.text().then(function (t) {
+                            throw new Error('后端未返回 JSON');
+                        });
+                    }
+                    return res.json();
+                })
+                .then(function (resp) {
+                    if (resp.code === 1) {
+                        // 可选：提示
+                        // alert(resp.msg || '提交成功');
+
+                        // 成功后关闭当前页面/弹窗
+                        if (window.Fast && Fast.api && Fast.api.close) {
+                            var i = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(i);
+                            parent.location.reload();
+                        } else if (window.parent && parent.Layer && parent.Layer.getFrameIndex) {
+                            var index = parent.Layer.getFrameIndex(window.name);
+                            parent.Layer.close(index);
+                        } else {
+                            history.back();
+                        }
+                    } else {
+                        alert(resp.msg || '提交失败');
+                    }
+                })
+                .catch(function (e) {
+                    console.error(e);
+                    alert('提交失败');
+                });
+        });
+
+    </script>

@@ -1,0 +1,162 @@
+<form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+    {:token()}
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">上级加盟商:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-parent_id" class="form-control selectpicker" name="parent_id" {if $forcedParent}disabled{/if} onchange="populateRegion()">
+                {foreach $parentList as $k => $v}
+                <option value="{$k}" {if $k==$forcedParent}selected{/if}>{$v}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">加盟商名称:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-name" class="form-control" name="row[name]" type="text" placeholder="必填">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">联系人:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-contact" class="form-control" name="row[contact]" type="text">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">联系电话:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-mobile" class="form-control" name="row[mobile]" type="text" data-rule="mobile">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">登录账号:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-login_username" class="form-control" name="row[login_username]" type="text" placeholder="必填，用于登录加盟商后台">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">登录密码:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-login_password" class="form-control" name="row[login_password]" type="password" placeholder="必填，6-30位">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">区域{if $isLevel2}（区/县，需在上级城市内）{else}（市，可多选）{/if}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="region-search" class="form-control" type="text" placeholder="输入区域名称搜索" autocomplete="off">
+            <div id="region-list" style="max-height:180px;overflow:auto;border:1px solid #ddd;border-radius:4px;padding:6px;margin-top:5px;display:flex;flex-wrap:wrap;"></div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">正式员工名额:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-formal_employee_quota" class="form-control" name="formal_employee_quota" type="number" min="0" value="0" placeholder="0=不限制">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">线路账号上限:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-line_quota" class="form-control" name="line_quota" type="number" min="0" value="0" placeholder="0=不限制">
+            <span class="help-block">该加盟商最多可开通的“线路”账号数，0=不限制</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">调度账号上限:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-dispatch_quota" class="form-control" name="dispatch_quota" type="number" min="0" value="0" placeholder="0=不限制">
+            <span class="help-block">该加盟商最多可开通的“调度”账号数，0=不限制</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">订单扣费比例%:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-order_fee_percent" class="form-control" name="row[order_fee_percent]" type="number" step="0.001" placeholder="一级默认1，二级默认1.5">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">物流需要审核:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="logistics_audit" value="1"> 该加盟商添加/修改/删除物流专线需总后台审核
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">合同上传:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="form-inline">
+                <input id="c-contract" class="form-control" size="28" name="row[contract]" type="text" value="" placeholder="上传加盟合同文件">
+                <span><button type="button" id="plupload-contract" class="btn btn-danger plupload" data-input-id="c-contract" data-multiple="false" data-preview-id="p-contract"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                <span class="msg-box n-right" for="c-contract"></span>
+                <ul class="row list-inline plupload-preview" id="p-contract"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">备注:</label>
+        <div class="col-xs-12 col-sm-8">
+            <textarea id="c-remark" class="form-control" name="row[remark]" rows="2"></textarea>
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>
+<script>
+var __districtList = {:json_encode($districtList)};
+var __cityList = {:json_encode($cityList)};
+var __parentRegionMap = {:json_encode($parentRegionMap)};
+var __occupiedRegionIds = {:json_encode($occupiedRegionIds)};
+function populateRegion() {
+    var list = document.getElementById('region-list');
+    var parent = document.getElementById('c-parent_id');
+    var pid = parent ? parseInt(parent.value, 10) : 0;
+    var items = [];
+    if (pid > 0) {
+        // 选了一级加盟商 → 新建二级，列出该一级城市内的区/县
+        var cities = (__parentRegionMap && __parentRegionMap[pid]) ? __parentRegionMap[pid] : [];
+        __districtList.forEach(function (d) {
+            if (cities.indexOf(parseInt(d.pid, 10)) !== -1) {
+                items.push(d);
+            }
+        });
+    } else {
+        // 新建一级 → 市多选
+        __cityList.forEach(function (c) { items.push(c); });
+    }
+    // 排除已被其他加盟商占用的区域
+    items = items.filter(function (i) {
+        return __occupiedRegionIds.indexOf(parseInt(i.id, 10)) === -1;
+    });
+    list.innerHTML = items.map(function (i) {
+        return '<label class="checkbox-inline" style="width:32%;margin:2px 0;">' +
+            '<input type="checkbox" name="region_ids[]" value="' + i.id + '"> ' + i.name + '</label>';
+    }).join('');
+    applyRegionSearch();
+}
+function applyRegionSearch() {
+    var kw = (document.getElementById('region-search').value || '').trim();
+    var labels = document.querySelectorAll('#region-list label');
+    for (var k = 0; k < labels.length; k++) {
+        labels[k].style.display = (!kw || labels[k].textContent.indexOf(kw) !== -1) ? '' : 'none';
+    }
+}
+function sortRegionList() {
+    var list = document.getElementById('region-list');
+    var labels = Array.prototype.slice.call(list.querySelectorAll('label'));
+    labels.sort(function (a, b) {
+        var ca = a.querySelector('input').checked ? 1 : 0;
+        var cb = b.querySelector('input').checked ? 1 : 0;
+        return cb - ca;
+    });
+    labels.forEach(function (l) { list.appendChild(l); });
+}
+document.getElementById('region-search').addEventListener('input', applyRegionSearch);
+document.getElementById('region-list').addEventListener('change', sortRegionList);
+populateRegion();
+</script>
