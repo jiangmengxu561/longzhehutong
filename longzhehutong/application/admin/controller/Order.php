@@ -462,70 +462,172 @@ class Order extends Backend
            }
            $list = $query->order($sort, $order)->paginate($limit);
        }
-        // 本页订单的抢单归属（哪个线路、哪个调度抢的），用于总后台订单列表展示
-        $pageOrderIds = [];
-        foreach ($list as $v) {
-            $pageOrderIds[] = (int)$v['id'];
-        }
-        $grabberMap = $this->buildOrderGrabberMap($pageOrderIds);
-        foreach ($list as $k=>$v){
-            // 所属加盟商（订单管理展示 + 搜索）
-            $orderFrInfo = FranchiseService::resolveOrderFranchiseInfo(is_object($v) ? $v->toArray() : (array)$v);
-            $list[$k]['franchise_id'] = $orderFrInfo['franchise_id'];
-            $list[$k]['franchise_name'] = $orderFrInfo['franchise_name'];
-            $list[$k]['franchise_level'] = $orderFrInfo['franchise_level'];
-            $list[$k]['franchise_detail'] = $orderFrInfo['franchise_detail'];
-            // 抢单归属：线路 / 调度
-            $grabber = $grabberMap[(int)$v['id']] ?? [];
-            $list[$k]['grab_line'] = (string)($grabber['line'] ?? '');
-            $list[$k]['grab_dispatch'] = (string)($grabber['dispatch'] ?? '');
-//            $list[$k]['lirun']  = round(($v['logistics_cost'] + $v['pickup_fee'] +$v['shipment_fee']) - ($v['logistics_driver_cost'] + $v['pickup_driver_fee'] + $v['shipment_driver_fee']));
-            $loading_address = Db::name('user_address')->where('id',$v['loading'])->find();
-            $unload_address = Db::name('user_address')->where('id',$v['unload'])->find();
-            if ($loading_address){
-                $list[$k]['loading'] = $loading_address['user_name'].'-'.$loading_address['mobile'].'-'.$loading_address['address'].'-'.'-'.$loading_address['detailed_address'].'-';
-            }
-            if ($unload_address){
-                $list[$k]['unload'] = $unload_address['user_name'].'-'.$unload_address['mobile'].'-'.$unload_address['address'].'-'.'-'.$unload_address['detailed_address'].'-';
-            }
-//            $list[$k]['order_address'] = extractProvinceCityEnhanced($loading_address['detailed_address']).'---'.extractProvinceCityEnhanced($unload_address['detailed_address']);
-            if (empty($loading_address['detailed_address'])){
-                $loading_address['detailed_address'] = $loading_address['address'] ?? '';
-            }
-            if (empty($unload_address['detailed_address'])){
-                $unload_address['detailed_address'] = $unload_address['address'] ?? '';
-            }
-            $list[$k]['order_address'] = extractProvinceCityEnhanced($loading_address['detailed_address']).'---'.extractProvinceCityEnhanced($unload_address['detailed_address']);
-            $ln = ($loading_address && isset($loading_address['user_name'])) ? $loading_address['user_name'] : '';
-            $lnCompany = ($loading_address && !empty($loading_address['company_name'])) ? $loading_address['company_name'] : '';
-            $un = ($unload_address && isset($unload_address['user_name'])) ? $unload_address['user_name'] : '';
-            $unCompany = ($unload_address && !empty($unload_address['company_name'])) ? $unload_address['company_name'] : '';
-            $list[$k]['address_contact'] = trim(implode(' ', array_filter([$ln, $lnCompany, $un, $unCompany])));
-            $payment_method = Db::name('payment_method')->where('id',$v['payment_method_id'])->find();
-            if ($payment_method&& $payment_method['p_id'] >0 ) {
-                $p_name = Db::name('payment_method')->where('id',$payment_method['p_id'])->value('payment_method');
-                $list[$k]['payment_method'] = $p_name .'---'.$payment_method['payment_method'];
-            }else{
-                if ($payment_method){
-                    $list[$k]['payment_method'] = $payment_method['payment_method'];
-                } 
-            }
-            $list[$k]['goods_type_id']    =   Db::name('goods_type')->where('id',$v['goods_type_id'])->value('name');
-            $list[$k]['packaging_id']     =   Db::name('packaging')->where('id',$v['packaging_id'])->value('name');
-            $list[$k]['car_type_id']      =   Db::name('car_type')->where('id',$v['car_type_id'])->value('name');
-            $list[$k]['delivery_type_id'] =   Db::name('delivery_type')->where('id',$v['delivery_type_id'])->value('name');
-            $list[$k]['receipt_type_id_value'] = $v['receipt_type_id']; // 保留原始 id，供前端“填写寄回单号”等判断用
-            $list[$k]['receipt_type_id']  =   Db::name('receipt_type')->where('id',$v['receipt_type_id'])->value('name');
-            $list[$k]['unpack_id']        =   Db::name('unpack')->where('id',$v['unpack_id'])->value('name');
-            $list[$k]['other_id']         =   Db::name('other')->where('id',$v['other_id'])->value('name');
-            // 通过订单表的 userid 关联到 user 表，获取下单人姓名和手机号
-            $list[$k]['username']         =   Db::name('user')->where('id',$v['userid'])->value('username');
-            $list[$k]['mobile']           =   Db::name('user')->where('id',$v['userid'])->value('mobile');
-//            $list[$k]['orter']           =   Db::name('order')->where('id',$v['orter_id'])->value('name');
-//            $list[$k]['mobile']           =   Db::name('user')->where('id',$v['userid'])->value('mobile');
-            $list[$k]['pickup_tax_point'] = Db::name('dricerorder')->where('order_id',$v['orderid'])->where('type',1)->value('tax_point');
-            $list[$k]['shipment_tax_point'] = Db::name('dricerorder')->where('order_id',$v['orderid'])->where('type',3)->value('tax_point');
-            $payPrice = isset($v['pay_price']) ? floatval($v['pay_price']) : 0;
+         // 本页订单的抢单归属（哪个线路、哪个调度抢的），用于总后台订单列表展示
+         $pageOrderIds = [];
+         foreach ($list as $v) {
+             $pageOrderIds[] = (int)$v['id'];
+         }
+         $grabberMap = $this->buildOrderGrabberMap($pageOrderIds);
+
+         // 批量预取本页订单的关联数据（地址、下单人、付款方式、各字典表、取送货运费税点），
+         // 避免在下面循环里逐行查库（原实现每行约 14 次查询，是列表加载慢的主因之一）
+         $dictFieldTableMap = [
+             'goods_type_id'    => 'goods_type',
+             'packaging_id'     => 'packaging',
+             'car_type_id'      => 'car_type',
+             'delivery_type_id' => 'delivery_type',
+             'receipt_type_id'  => 'receipt_type',
+             'unpack_id'        => 'unpack',
+             'other_id'         => 'other',
+         ];
+         $pageAddressIds = [];
+         $pageUserIds = [];
+         $pagePaymentIds = [];
+         $pageOrderNos = [];
+         $dictIds = [];
+         foreach ($dictFieldTableMap as $dictTable) {
+             $dictIds[$dictTable] = [];
+         }
+         foreach ($list as $v) {
+             foreach (['loading', 'unload'] as $addrField) {
+                 $addrId = (int)($v[$addrField] ?? 0);
+                 if ($addrId > 0) {
+                     $pageAddressIds[$addrId] = $addrId;
+                 }
+             }
+             $userId = (int)($v['userid'] ?? 0);
+             if ($userId > 0) {
+                 $pageUserIds[$userId] = $userId;
+             }
+             $paymentId = (int)($v['payment_method_id'] ?? 0);
+             if ($paymentId > 0) {
+                 $pagePaymentIds[$paymentId] = $paymentId;
+             }
+             $orderNo = trim((string)($v['orderid'] ?? ''));
+             if ($orderNo !== '') {
+                 $pageOrderNos[$orderNo] = $orderNo;
+             }
+             foreach ($dictFieldTableMap as $dictField => $dictTable) {
+                 $dictId = (int)($v[$dictField] ?? 0);
+                 if ($dictId > 0) {
+                     $dictIds[$dictTable][$dictId] = $dictId;
+                 }
+             }
+         }
+
+         $addressMap = [];
+         if ($pageAddressIds !== []) {
+             foreach (Db::name('user_address')->whereIn('id', array_values($pageAddressIds))->select() as $addrRow) {
+                 $addressMap[(int)$addrRow['id']] = $addrRow;
+             }
+         }
+         $userDisplayMap = [];
+         if ($pageUserIds !== []) {
+             foreach (Db::name('user')->whereIn('id', array_values($pageUserIds))->field('id,username,mobile')->select() as $userRow) {
+                 $userDisplayMap[(int)$userRow['id']] = $userRow;
+             }
+         }
+         // 付款方式：主分类 + 上级分类名称（前端展示为「上级---本级」）
+         $paymentMap = [];
+         if ($pagePaymentIds !== []) {
+             $parentPaymentIds = [];
+             foreach (Db::name('payment_method')->whereIn('id', array_values($pagePaymentIds))->select() as $pmRow) {
+                 $paymentMap[(int)$pmRow['id']] = $pmRow;
+                 $pmParentId = (int)($pmRow['p_id'] ?? 0);
+                 if ($pmParentId > 0) {
+                     $parentPaymentIds[$pmParentId] = $pmParentId;
+                 }
+             }
+             if ($parentPaymentIds !== []) {
+                 foreach (Db::name('payment_method')->whereIn('id', array_values($parentPaymentIds))->select() as $pmRow) {
+                     $paymentMap[(int)$pmRow['id']] = $pmRow;
+                 }
+             }
+         }
+         $dictNameMap = [];
+         foreach ($dictFieldTableMap as $dictTable) {
+             $dictNameMap[$dictTable] = [];
+             if ($dictIds[$dictTable] === []) {
+                 continue;
+             }
+             foreach (Db::name($dictTable)->whereIn('id', array_values($dictIds[$dictTable]))->field('id,name')->select() as $dictRow) {
+                 $dictNameMap[$dictTable][(int)$dictRow['id']] = $dictRow['name'];
+             }
+         }
+         // 下单人 -> 所属加盟商：整页一次预取（未绑定的订单仍按装货区域在下面逐行判断）
+         FranchiseService::prefetchBoundUserFranchise(array_values($pageUserIds));
+         // 取货(type=1)/送货(type=3)税点：按本页订单号一次取回
+         $taxPointMap = [];
+         if ($pageOrderNos !== []) {
+             foreach (Db::name('dricerorder')
+                 ->whereIn('order_id', array_values($pageOrderNos))
+                 ->whereIn('type', [1, 3])
+                 ->field('id,order_id,type,tax_point')
+                 ->order('id asc')
+                 ->select() as $taxRow) {
+                 $taxKey = (string)$taxRow['order_id'];
+                 $taxType = (int)$taxRow['type'];
+                 if (!isset($taxPointMap[$taxKey][$taxType])) {
+                     $taxPointMap[$taxKey][$taxType] = $taxRow['tax_point'];
+                 }
+             }
+         }
+
+         foreach ($list as $k=>$v){
+             // 所属加盟商（订单管理展示 + 搜索）
+             $orderFrInfo = FranchiseService::resolveOrderFranchiseInfo(is_object($v) ? $v->toArray() : (array)$v);
+             $list[$k]['franchise_id'] = $orderFrInfo['franchise_id'];
+             $list[$k]['franchise_name'] = $orderFrInfo['franchise_name'];
+             $list[$k]['franchise_level'] = $orderFrInfo['franchise_level'];
+             $list[$k]['franchise_detail'] = $orderFrInfo['franchise_detail'];
+             // 抢单归属：线路 / 调度
+             $grabber = $grabberMap[(int)$v['id']] ?? [];
+             $list[$k]['grab_line'] = (string)($grabber['line'] ?? '');
+             $list[$k]['grab_dispatch'] = (string)($grabber['dispatch'] ?? '');
+             $loading_address = $addressMap[(int)($v['loading'] ?? 0)] ?? [];
+             $unload_address = $addressMap[(int)($v['unload'] ?? 0)] ?? [];
+             if ($loading_address){
+                 $list[$k]['loading'] = $loading_address['user_name'].'-'.$loading_address['mobile'].'-'.$loading_address['address'].'-'.'-'.$loading_address['detailed_address'].'-';
+             }
+             if ($unload_address){
+                 $list[$k]['unload'] = $unload_address['user_name'].'-'.$unload_address['mobile'].'-'.$unload_address['address'].'-'.'-'.$unload_address['detailed_address'].'-';
+             }
+             if (empty($loading_address['detailed_address'])){
+                 $loading_address['detailed_address'] = $loading_address['address'] ?? '';
+             }
+             if (empty($unload_address['detailed_address'])){
+                 $unload_address['detailed_address'] = $unload_address['address'] ?? '';
+             }
+             $list[$k]['order_address'] = extractProvinceCityEnhanced($loading_address['detailed_address']).'---'.extractProvinceCityEnhanced($unload_address['detailed_address']);
+             $ln = ($loading_address && isset($loading_address['user_name'])) ? $loading_address['user_name'] : '';
+             $lnCompany = ($loading_address && !empty($loading_address['company_name'])) ? $loading_address['company_name'] : '';
+             $un = ($unload_address && isset($unload_address['user_name'])) ? $unload_address['user_name'] : '';
+             $unCompany = ($unload_address && !empty($unload_address['company_name'])) ? $unload_address['company_name'] : '';
+             $list[$k]['address_contact'] = trim(implode(' ', array_filter([$ln, $lnCompany, $un, $unCompany])));
+             $payment_method = $paymentMap[(int)($v['payment_method_id'] ?? 0)] ?? null;
+             if ($payment_method && (int)($payment_method['p_id'] ?? 0) > 0 ) {
+                 $p_name = $paymentMap[(int)$payment_method['p_id']]['payment_method'] ?? '';
+                 $list[$k]['payment_method'] = $p_name .'---'.$payment_method['payment_method'];
+             }else{
+                 if ($payment_method){
+                     $list[$k]['payment_method'] = $payment_method['payment_method'];
+                 } 
+             }
+             $list[$k]['goods_type_id']    =   $dictNameMap['goods_type'][(int)($v['goods_type_id'] ?? 0)] ?? null;
+             $list[$k]['packaging_id']     =   $dictNameMap['packaging'][(int)($v['packaging_id'] ?? 0)] ?? null;
+             $list[$k]['car_type_id']      =   $dictNameMap['car_type'][(int)($v['car_type_id'] ?? 0)] ?? null;
+             $list[$k]['delivery_type_id'] =   $dictNameMap['delivery_type'][(int)($v['delivery_type_id'] ?? 0)] ?? null;
+             $list[$k]['receipt_type_id_value'] = $v['receipt_type_id']; // 保留原始 id，供前端“填写寄回单号”等判断用
+             $list[$k]['receipt_type_id']  =   $dictNameMap['receipt_type'][(int)($v['receipt_type_id'] ?? 0)] ?? null;
+             $list[$k]['unpack_id']        =   $dictNameMap['unpack'][(int)($v['unpack_id'] ?? 0)] ?? null;
+             $list[$k]['other_id']         =   $dictNameMap['other'][(int)($v['other_id'] ?? 0)] ?? null;
+             // 通过订单表的 userid 关联到 user 表，获取下单人姓名和手机号
+             $list[$k]['username']         =   $userDisplayMap[(int)($v['userid'] ?? 0)]['username'] ?? null;
+             $list[$k]['mobile']           =   $userDisplayMap[(int)($v['userid'] ?? 0)]['mobile'] ?? null;
+             $orderNoKey = trim((string)($v['orderid'] ?? ''));
+             $list[$k]['pickup_tax_point'] = $taxPointMap[$orderNoKey][1] ?? null;
+             $list[$k]['shipment_tax_point'] = $taxPointMap[$orderNoKey][3] ?? null;
+             $payPrice = isset($v['pay_price']) ? floatval($v['pay_price']) : 0;
 
             // 订单利润：总运费(pay_price) - 总成本(cost_cont)
             // 仅总后台/财务(超管/组1/组30)可见
@@ -583,13 +685,18 @@ class Order extends Backend
             $totalVolume = 0;      // 总方数
             $totalOrders = 0;      // 总单量
             foreach ($allOrders as $order) {
-                $totalOrders++;
-                $totalWeight += isset($order['weight']) ? floatval($order['weight']) : 0;
-                $totalVolume += isset($order['direction']) ? floatval($order['direction']) : 0;
-
                 $payPrice = isset($order['pay_price']) ? floatval($order['pay_price']) : 0;
                 $costCont = isset($order['cost_cont']) ? floatval($order['cost_cont']) : 0;
 
+                // 统计口径：订单已完成(pay_status=3) 且 利润(pay_price - cost_cont)不为负
+                // 利润为负的订单整单不统计（金额、吨数、方数、单量均不计入）
+                if (round($payPrice - $costCont, 2) < 0) {
+                    continue;
+                }
+
+                $totalOrders++;
+                $totalWeight += isset($order['weight']) ? floatval($order['weight']) : 0;
+                $totalVolume += isset($order['direction']) ? floatval($order['direction']) : 0;
                 $totalIncome += $payPrice;
                 $totalExpense += $costCont;
                 // 订单总利润 = 总运费(pay_price) - 总成本(cost_cont)

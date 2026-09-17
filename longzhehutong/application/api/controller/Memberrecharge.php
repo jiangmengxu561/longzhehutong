@@ -4,6 +4,7 @@ namespace app\api\controller;
 
 use app\common\controller\Api;
 use app\common\library\MemberService;
+use app\admin\library\FranchiseService;
 use think\Db;
 
 /**
@@ -205,34 +206,55 @@ class Memberrecharge extends Api
                 $payTime = isset($data['time_end']) ? strtotime($data['time_end']) : time();
 
                 $order = Db::name(MemberService::ORDER_TABLE)->where('order_no', $orderNo)->find();
-                if ($order && (int)$order['pay_status'] !== 3) {
-                    Db::startTrans();
-                    try {
-                        $user = Db::name('user')->where('id', (int)$order['user_id'])->find();
-                        if ($user) {
-                            $expiryBefore = MemberService::normalizeMemberTime($user['member_time']);
-                            $base = max(time(), $expiryBefore);
-                            $expiryAfter = MemberService::calcExpiry($base, (int)$order['member_duration'], (string)$order['member_unit']);
-                            Db::name('user')
-                                ->where('id', (int)$order['user_id'])
+                if ($order) {
+                    $paidOk = false;
+                    if ((int)$order['pay_status'] !== 3) {
+                        Db::startTrans();
+                        try {
+                            $user = Db::name('user')->where('id', (int)$order['user_id'])->find();
+                            if ($user) {
+                                $expiryBefore = MemberService::normalizeMemberTime($user['member_time']);
+                                $base = max(time(), $expiryBefore);
+                                $expiryAfter = MemberService::calcExpiry($base, (int)$order['member_duration'], (string)$order['member_unit']);
+                                Db::name('user')
+                                    ->where('id', (int)$order['user_id'])
+                                    ->update([
+                                        'membertype' => (int)$order['membertype_after'],
+                                        'member_time' => $expiryAfter,
+                                        'updatetime' => time(),
+                                    ]);
+                            }
+                            Db::name(MemberService::ORDER_TABLE)
+                                ->where('id', (int)$order['id'])
                                 ->update([
-                                    'membertype' => (int)$order['membertype_after'],
-                                    'member_time' => $expiryAfter,
+                                    'pay_status' => 3,
+                                    'pay_time'   => $payTime,
+                                    'expiry_after' => $expiryAfter ?? null,
                                     'updatetime' => time(),
                                 ]);
+                            Db::commit();
+                            $paidOk = true;
+                        } catch (\Exception $e) {
+                            Db::rollback();
+                            file_put_contents($path . "/" . $date . ".log", '处理异常-' . $e->getMessage() . PHP_EOL, FILE_APPEND);
                         }
-                        Db::name(MemberService::ORDER_TABLE)
-                            ->where('id', (int)$order['id'])
-                            ->update([
-                                'pay_status' => 3,
-                                'pay_time'   => $payTime,
-                                'expiry_after' => $expiryAfter ?? null,
-                                'updatetime' => time(),
-                            ]);
-                        Db::commit();
-                    } catch (\Exception $e) {
-                        Db::rollback();
-                        file_put_contents($path . "/" . $date . ".log", '处理异常-' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+                    }
+                    // 开通会员成功：会员若已绑定加盟商，则给该加盟商钱包自动入账
+                    // 入账金额 = 总部设置的会员月费单价（默认 150）× 本次开通月数（季付 3、年付 12，不足一月按一月）
+                    // 该方法按充值订单幂等，重复通知不会重复加钱；已支付订单重复通知也会补一次入账，避免上次入账失败后丢失
+                    if ($paidOk || (int)$order['pay_status'] === 3) {
+                        try {
+                            $reward = FranchiseService::rewardMemberRecharge(
+                                (int)$order['user_id'],
+                                (int)$order['id'],
+                                null,
+                                (string)$orderNo,
+                                FranchiseService::memberMonthsFromPackage((int)$order['member_duration'], (string)$order['member_unit'])
+                            );
+                            file_put_contents($path . "/" . $date . ".log", '加盟商入账-' . ($reward['msg'] ?? '') . PHP_EOL, FILE_APPEND);
+                        } catch (\Exception $e) {
+                            file_put_contents($path . "/" . $date . ".log", '加盟商入账异常-' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+                        }
                     }
                 }
             }

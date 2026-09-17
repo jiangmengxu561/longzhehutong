@@ -176,7 +176,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Controller.api.bindevent();
         },
         memberedit: function () {
-            Controller.api.bindevent();
+            // 改身份/到期：整月不提示，非整月/到期时间比现在早时先提示（见 backend/memberfee.js）
+            require(['backend/memberfee'], function (MemberFee) {
+                MemberFee.bind($("form[role=form]"));
+            });
         },
 
         commdetail: function () {

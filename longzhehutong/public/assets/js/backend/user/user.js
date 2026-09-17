@@ -89,7 +89,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Controller.api.bindevent();
         },
         edit: function () {
-            Controller.api.bindevent();
+            // 加盟商在此页编辑会员身份/到期（表单与 franchise/memberedit 相同），
+            // 非整月或到期时间比现在早时先提示；其他编辑表单走默认逻辑
+            require(['backend/memberfee'], function (MemberFee) {
+                MemberFee.bind($("form[role=form]"));
+            });
         },
         api: {
             bindevent: function () {

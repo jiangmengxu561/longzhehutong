@@ -479,12 +479,21 @@ class Franchise extends Backend
                 ->paginate($limit);
             $franchise = Db::name('franchise')->where('id', $franchiseId)->find();
             $rows = $list->items();
+            $relatedTypeMap = [
+                'order'           => '订单完成扣费',
+                'member'          => '修改会员扣费',
+                'member_recharge' => '小程序开通会员入账',
+                'add_franchisee'  => '新增二级加盟商扣费',
+                'monthly_fee'     => '月度加盟费',
+                'adjust'          => '钱包调整',
+            ];
             foreach ($rows as &$v) {
                 $v['type_text'] = $v['type'] === 'income' ? '收入' : '支出';
                 $v['createtime_text'] = $v['createtime'] > 0 ? date('Y-m-d H:i:s', $v['createtime']) : '';
                 $v['balance_before'] = number_format((float)$v['balance_before'], 2, '.', '');
                 $v['balance_after'] = number_format((float)$v['balance_after'], 2, '.', '');
                 $v['amount'] = number_format((float)$v['amount'], 2, '.', '');
+                $v['related_type'] = $relatedTypeMap[(string)$v['related_type']] ?? (string)$v['related_type'];
             }
             unset($v);
             $this->view->assign('franchise', $franchise);
@@ -658,6 +667,9 @@ class Franchise extends Backend
             ? date('Y-m-d', is_numeric($row['member_time']) ? (int)$row['member_time'] : strtotime($row['member_time']))
             : '';
         $operator = $this->currentFranchise();
+        // 加盟商改身份/到期按整月扣费，前端提示需要月费单价；总部直接改不扣费，不做提示
+        $this->assignconfig('memberMonthFeeEnabled', !$this->auth->isSuperAdmin());
+        $this->assignconfig('memberMonthFee', (float)FranchiseService::getGlobalConfig()['member_month_fee']);
         if ($operator) {
             $bound = Db::name('franchise_member')
                 ->where('user_id', $userId)

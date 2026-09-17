@@ -42,26 +42,31 @@ class AdminUserBind
      * admin_order 中抢单方角色组解析为调度(identity=3)的订单 id。
      * 调度公海：仅排除「已被调度抢过」；线路抢单写入 admin_order 不算。调度列表须 backend_status=2（线路在子后台确认配车单后写入）。
      *
+     * 实现要点：先按 group_id 去重批量解析身份，再一次性取订单 id；
+     * 早期实现是「取全表 admin_order 后逐行查 auth_group」，抢单量大时会有上万次查询，列表直接卡死。
+     *
      * @return int[]
      */
     public static function getOrderIdsGrabbedByDispatchRole(): array
     {
-        $rows = Db::name('admin_order')->field('order_id,group_id')->select();
-        if (!$rows) {
+        $groupIds = Db::name('admin_order')->where('group_id', '>', 0)->distinct(true)->column('group_id');
+        if (!$groupIds) {
             return [];
         }
-        $out = [];
-        foreach ($rows as $r) {
-            $gid = (int)($r['group_id'] ?? 0);
-            if ($gid <= 0) {
-                continue;
-            }
-            if (self::resolveEffectiveOrderRoleIdentity($gid) === 3) {
-                $out[] = (int)$r['order_id'];
+
+        $dispatchGroupIds = [];
+        foreach ($groupIds as $gid) {
+            if (self::resolveEffectiveOrderRoleIdentity((int)$gid) === 3) {
+                $dispatchGroupIds[] = (int)$gid;
             }
         }
+        if ($dispatchGroupIds === []) {
+            return [];
+        }
 
-        return array_values(array_unique($out));
+        $ids = Db::name('admin_order')->whereIn('group_id', $dispatchGroupIds)->column('order_id');
+
+        return array_values(array_unique(array_map('intval', $ids ?: [])));
     }
 
     /**
@@ -82,11 +87,57 @@ class AdminUserBind
         if ($groupId <= 0) {
             return 0;
         }
+        if (array_key_exists($groupId, self::$orderRoleIdentityCache)) {
+            return self::$orderRoleIdentityCache[$groupId];
+        }
+        self::$orderRoleIdentityCache[$groupId] = self::doResolveEffectiveOrderRoleIdentity($groupId);
+
+        return self::$orderRoleIdentityCache[$groupId];
+    }
+
+    /**
+     * 请求内缓存：角色组 ID => 有效订单身份（1=代理，2=线路，3=调度，0=其它）
+     *
+     * @var array<int,int>
+     */
+    protected static $orderRoleIdentityCache = [];
+
+    /**
+     * 请求内缓存：fa_auth_group 全表 id => row，避免逐行、逐层回查数据库
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
+    protected static $authGroupRowCache = null;
+
+    /**
+     * 角色组表整表读入内存（订单列表一次加载可能涉及成百上千个组），只查一次库
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    protected static function loadAuthGroupRows(): array
+    {
+        if (self::$authGroupRowCache === null) {
+            $rows = [];
+            foreach (Db::name('auth_group')->field('id,pid,identity')->select() as $row) {
+                $rows[(int)$row['id']] = $row;
+            }
+            self::$authGroupRowCache = $rows;
+        }
+
+        return self::$authGroupRowCache;
+    }
+
+    /**
+     * 真正沿 pid 解析身份的逻辑（结果由 resolveEffectiveOrderRoleIdentity 缓存）
+     */
+    protected static function doResolveEffectiveOrderRoleIdentity(int $groupId): int
+    {
+        $groupRows = self::loadAuthGroupRows();
         $gid = $groupId;
         $seen = [];
         while ($gid > 0 && !isset($seen[$gid])) {
             $seen[$gid] = true;
-            $row = Db::name('auth_group')->where('id', $gid)->field('id,pid,identity')->find();
+            $row = $groupRows[$gid] ?? null;
             if (!$row) {
                 break;
             }
@@ -96,8 +147,8 @@ class AdminUserBind
             }
             $gid = (int)($row['pid'] ?? 0);
         }
-
-        return (int)Db::name('auth_group')->where('id', $groupId)->value('identity');
+ 
+        return (int)($groupRows[$groupId]['identity'] ?? 0);
     }
 
     /**
@@ -472,6 +523,25 @@ class AdminUserBind
         if ($adminId <= 0) {
             return 0;
         }
+        if (array_key_exists($adminId, self::$primaryBusinessGroupIdCache)) {
+            return self::$primaryBusinessGroupIdCache[$adminId];
+        }
+
+        return self::$primaryBusinessGroupIdCache[$adminId] = self::doGetPrimaryBusinessGroupIdForAdmin($adminId);
+    }
+
+    /**
+     * 请求内缓存：管理员 ID => 主业务角色组 ID
+     *
+     * @var array<int,int>
+     */
+    protected static $primaryBusinessGroupIdCache = [];
+
+    /**
+     * 主业务角色组解析逻辑（结果由 getPrimaryBusinessGroupIdForAdmin 缓存，避免同一请求反复查库）
+     */
+    protected static function doGetPrimaryBusinessGroupIdForAdmin(int $adminId): int
+    {
         $gids = Db::name('auth_group_access')->where('uid', $adminId)->column('group_id');
         $gids = array_values(array_unique(array_map('intval', $gids ?: [])));
         if ($gids === []) {
@@ -577,7 +647,12 @@ class AdminUserBind
         if ($names === [] || empty($orderRow['loading'])) {
             return false;
         }
-        $addr = Db::name('user_address')->where('id', (int)$orderRow['loading'])->field('detailed_address,address')->find();
+        $loadingId = (int)$orderRow['loading'];
+        if (!array_key_exists($loadingId, self::$loadingAddressCache)) {
+            $loadingAddr = Db::name('user_address')->where('id', $loadingId)->field('detailed_address,address')->find();
+            self::$loadingAddressCache[$loadingId] = $loadingAddr ?: [];
+        }
+        $addr = self::$loadingAddressCache[$loadingId];
         if (!$addr) {
             return false;
         }
@@ -596,6 +671,14 @@ class AdminUserBind
 
         return true;
     }
+
+    /**
+     * 请求内缓存：装货地址 ID => [detailed_address, address]。
+     * 加盟商区域匹配会对同一订单的装货地址反复调用，避免每次都查库。
+     *
+     * @var array<int,array<string,mixed>>
+     */
+    protected static $loadingAddressCache = [];
 
     public static function orderMatchesAnyAgentRegionalScopes(array $orderRow, array $agentAdminIds, int $scopeAgentGroupId): bool
     {

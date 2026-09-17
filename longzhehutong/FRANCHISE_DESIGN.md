@@ -34,7 +34,12 @@
    - 会员归属一级加盟商 → 扣该一级加盟商钱包 `pay_price × order_fee_percent`（默认 1%）
    - 会员归属二级加盟商 → 扣该二级加盟商钱包（其 `order_fee_percent`，默认 1.5%）＋ 扣其上级一级加盟商钱包（其一 `order_fee_percent`，默认 1%）
    - 每个订单对同一加盟商只扣一次（以 `franchise_wallet_log` 的 `related_type=order` + `related_id=订单id` 判重）
-4. **余额不足/无权限/重复绑定**：一律**禁止并给出提示**；任一加盟商（含上级）余额 `<=0` 时，其名下及下级所有账号禁止操作（`FranchiseService::canOperate()`）。
+4. **小程序端开通会员（入账）**：会员在小程序付款开通/续费会员成功后（`app/api/controller/Memberrecharge.php::memnotify()`），若该会员已被某加盟商绑定，则给该加盟商钱包**入账** `会员月费单价(member_month_fee，默认150) × 本次开通月数`。
+   - 月数口径（`FranchiseService::memberMonthsFromPackage()`，与“改会员到期”一致）：月付=套餐月数（季付 3、半年 6）、年付 ×12、周付 ×7÷30 向上取整（不足一月按一月）
+   - 服务：`FranchiseService::rewardMemberRecharge($userId, $memberorderId, $amount = null, $orderNo = '', $months = 1)`
+   - 幂等：以 `related_type=member_recharge` + `related_id=会员充值订单id` 判重，微信重复回调不会重复入账
+   - 未绑定加盟商的会员不入账；只入账被绑定的那家加盟商，与其上级一级加盟商无关；已支付订单重复通知会补一次入账（上次失败时不丢单）
+5. **余额不足/无权限/重复绑定**：一律**禁止并给出提示**；任一加盟商（含上级）余额 `<=0` 时，其名下及下级所有账号禁止操作（`FranchiseService::canOperate()`）。
 
 ## 四、数据隔离
 

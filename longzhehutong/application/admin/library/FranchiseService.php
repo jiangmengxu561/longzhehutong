@@ -17,6 +17,7 @@ class FranchiseService
 
     public const RELATED_ORDER = 'order';
     public const RELATED_MEMBER = 'member';
+    public const RELATED_MEMBER_RECHARGE = 'member_recharge';
     public const RELATED_ADD_FRANCHISEE = 'add_franchisee';
     public const RELATED_ADJUST = 'adjust';
 
@@ -159,32 +160,77 @@ class FranchiseService
     }
 
     /**
-     * 按“日历月”计算会员到期扣费月数：整月推进，剩余不足一月按一月（上限保护 120 个月）
+     * “整月”标准（月对月同日，而不是固定 30 天）：
+     *  - 以“起算日”的日为锚点，到期日等于起算日在目标月的同一天（该月没有这一天则取月末）即为整月；
+     *    例：1月1日 → 2月1日 = 1 个整月（2月只有 28 天也照样是整月）；1月31日 → 2月28日 = 1 个整月。
+     *  - 超过锚点的部分算“不足一月”，按“不足一月按一月”进位：
+     *    例：1月1日 → 2月2日 = 1 个月零 1 天，扣 2 个月。
+     *  - 到期时间早于或等于今天时无法判断剩余时长（expired = true），调用方应先提示修改到期时间。
      *
-     * @return int
+     * @return int 扣费月数（最少 1 个月）
      */
     protected static function calcMemberMonths(int $nowTs, int $targetTs): int
     {
-        if ($targetTs <= $nowTs) {
-            return 1;
-        }
-        $y1 = (int)date('Y', $nowTs);
-        $m1 = (int)date('n', $nowTs);
-        $d1 = (int)date('j', $nowTs);
-        $y2 = (int)date('Y', $targetTs);
-        $m2 = (int)date('n', $targetTs);
-        $d2 = (int)date('j', $targetTs);
-        $months = ($y2 - $y1) * 12 + ($m2 - $m1);
-        // 以“起始日”在目标月的同一天为锚点（该月若无此日则取月末）
-        $anchorDay = (int)date('t', mktime(0, 0, 0, $m2, 1, $y2));
-        $anchorDay = min($d1, $anchorDay);
-        $anchor = mktime(0, 0, 0, $m2, $anchorDay, $y2);
-        // 目标日在锚点之后（多出的不足一月）按“不足一月按一月”进一位
-        if ($targetTs > $anchor) {
-            $months++;
-        }
+        return self::memberMonthsDetail($nowTs, $targetTs)['months'];
+    }
 
-        return max(1, $months);
+    /**
+     * 会员到期时间的扣费月数明细（后台提示文案共用同一套算法）
+     *
+     * @return array{months:int,whole:bool,whole_months:int,extra_days:int,expired:bool}
+     */
+    public static function memberMonthsDetail(int $nowTs, int $targetTs): array
+    {
+        $nowDay = strtotime(date('Y-m-d', $nowTs));
+        $targetDay = strtotime(date('Y-m-d', $targetTs));
+        // 到期时间早于/等于今天：没有可用的剩余时长，需先修改到期时间
+        if ($targetDay === false || $nowDay === false || $targetDay <= $nowDay) {
+            return ['months' => 1, 'whole' => false, 'whole_months' => 0, 'extra_days' => 0, 'expired' => true];
+        }
+        // 到期日与起算日相差的“日历月”数
+        $monthDiff = ((int)date('Y', $targetDay) - (int)date('Y', $nowDay)) * 12
+            + ((int)date('n', $targetDay) - (int)date('n', $nowDay));
+        $anchor = self::addMonthsSameDay($nowDay, $monthDiff);
+        if ($targetDay === $anchor) {
+            // 正好整月
+            $months = max(1, $monthDiff);
+
+            return ['months' => $months, 'whole' => true, 'whole_months' => $months, 'extra_days' => 0, 'expired' => false];
+        }
+        if ($targetDay > $anchor) {
+            // 已满 monthDiff 个整月，多出的不足一月再进位
+            $wholeMonths = $monthDiff;
+            $months = $monthDiff + 1;
+        } else {
+            // 不满 monthDiff 个整月（如 1个月零1天），按 monthDiff 个月计费
+            $wholeMonths = max(0, $monthDiff - 1);
+            $months = $monthDiff;
+        }
+        $extraDays = (int)round(($targetDay - self::addMonthsSameDay($nowDay, $wholeMonths)) / 86400);
+
+        return [
+            'months'       => max(1, $months),
+            'whole'        => false,
+            'whole_months' => $wholeMonths,
+            'extra_days'   => max(0, $extraDays),
+            'expired'      => false,
+        ];
+    }
+
+    /**
+     * 以“月对月同日”推进月数：该月若无此日则取当月最后一天，返回当日 0 点时间戳
+     */
+    protected static function addMonthsSameDay(int $baseTs, int $addMonths): int
+    {
+        $year = (int)date('Y', $baseTs);
+        $month = (int)date('n', $baseTs);
+        $day = (int)date('j', $baseTs);
+        $total = $year * 12 + ($month - 1) + $addMonths;
+        $newYear = (int)floor($total / 12);
+        $newMonth = $total - $newYear * 12 + 1;
+        $maxDay = (int)date('t', mktime(0, 0, 0, $newMonth, 1, $newYear));
+
+        return (int)mktime(0, 0, 0, $newMonth, min($day, $maxDay), $newYear);
     }
 
     /**
@@ -524,6 +570,25 @@ class FranchiseService
      */
     public static function resolveFranchiseForAdmin(int $adminId): ?array
     {
+        if (array_key_exists($adminId, self::$franchiseByAdminIdCache)) {
+            return self::$franchiseByAdminIdCache[$adminId];
+        }
+
+        return self::$franchiseByAdminIdCache[$adminId] = self::doResolveFranchiseForAdmin($adminId);
+    }
+
+    /**
+     * 请求内缓存：管理员 ID => 所属加盟商（null 表示不属于任何加盟商）
+     *
+     * @var array<int,array<string,mixed>|null>
+     */
+    protected static $franchiseByAdminIdCache = [];
+
+    /**
+     * 加盟商归属解析逻辑（结果由 resolveFranchiseForAdmin 缓存，同一次请求内只查一次）
+     */
+    protected static function doResolveFranchiseForAdmin(int $adminId): ?array
+    {
         $fr = self::getFranchiseByAdminId($adminId);
         if ($fr) {
             return $fr;
@@ -532,17 +597,68 @@ class FranchiseService
         if ($gid <= 0) {
             return null;
         }
+        $franchiseByGroupId = self::franchiseByGroupIdMap();
+        $groupPid = self::authGroupPidMap();
         $seen = [];
         while ($gid > 0 && !isset($seen[$gid])) {
             $seen[$gid] = true;
-            $fr = Db::name('franchise')->where('group_id', $gid)->find();
+            $fr = $franchiseByGroupId[$gid] ?? null;
             if ($fr) {
                 return $fr;
             }
-            $gid = (int)Db::name('auth_group')->where('id', $gid)->value('pid');
+            $gid = (int)($groupPid[$gid] ?? 0);
         }
 
         return null;
+    }
+
+    /**
+     * 请求内缓存：角色组 ID => 加盟商（沿角色组向上找加盟商时用，避免逐层查库）
+     *
+     * @var array<int,array<string,mixed>>|null
+     */
+    protected static $franchiseByGroupIdMapCache = null;
+
+    /**
+     * 请求内缓存：角色组 ID => pid
+     *
+     * @var array<int,int>|null
+     */
+    protected static $authGroupPidMapCache = null;
+
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    protected static function franchiseByGroupIdMap(): array
+    {
+        if (self::$franchiseByGroupIdMapCache === null) {
+            $map = [];
+            foreach (Db::name('franchise')->where('group_id', '>', 0)->select() as $row) {
+                $gid = (int)$row['group_id'];
+                if (!isset($map[$gid])) {
+                    $map[$gid] = $row;
+                }
+            }
+            self::$franchiseByGroupIdMapCache = $map;
+        }
+
+        return self::$franchiseByGroupIdMapCache;
+    }
+
+    /**
+     * @return array<int,int>
+     */
+    protected static function authGroupPidMap(): array
+    {
+        if (self::$authGroupPidMapCache === null) {
+            $map = [];
+            foreach (Db::name('auth_group')->field('id,pid')->select() as $row) {
+                $map[(int)$row['id']] = (int)$row['pid'];
+            }
+            self::$authGroupPidMapCache = $map;
+        }
+
+        return self::$authGroupPidMapCache;
     }
 
     /**
@@ -1012,35 +1128,172 @@ class FranchiseService
     {
         $userId = (int)($order['userid'] ?? 0);
         if ($userId > 0) {
-            // 已绑定后台账号（admin_user_bind）优先：该账号是某加盟商管理员则归该加盟商，否则视为总部
-            $adminBind = Db::name('admin_user_bind')->where('user_id', $userId)->find();
-            if ($adminBind) {
-                $boundFranchiseId = (int)Db::name('franchise')->where('admin_id', (int)$adminBind['admin_id'])->value('id');
-                if ($boundFranchiseId > 0) {
-                    return self::franchiseInfoForId($boundFranchiseId);
-                }
-
-                return ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
+            if (!array_key_exists($userId, self::$boundUserFranchiseCache)) {
+                self::$boundUserFranchiseCache[$userId] = self::resolveBoundUserFranchise($userId);
             }
-            $fm = Db::name('franchise_member')->where('user_id', $userId)->find();
-            if ($fm) {
-                return self::franchiseInfoForId((int)$fm['franchise_id']);
+            $boundFranchiseInfo = self::$boundUserFranchiseCache[$userId];
+            if ($boundFranchiseInfo !== null) {
+                return $boundFranchiseInfo;
             }
         }
-        // 未绑定：按装货地命中加盟商区域
-        foreach (Db::name('franchise')->select() as $f) {
+        // 未绑定：按装货地命中加盟商区域（规则已预展开，逐单匹配不再查库）
+        foreach (self::franchiseRegionRules() as $rule) {
+            if (\app\admin\library\AdminUserBind::orderRowMatchesRegionalNames($order, $rule['names'])) {
+                return self::franchiseInfoForId($rule['franchise_id']);
+            }
+        }
+
+        return ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
+    }
+
+    /**
+     * 请求内缓存：下单人 ID => 绑定加盟商信息（null 表示未绑定任何加盟商，需继续按装货区域判断）
+     *
+     * @var array<int,array{franchise_id:int,franchise_name:string,franchise_level:int,franchise_detail:string}|null>
+     */
+    protected static $boundUserFranchiseCache = [];
+
+    /**
+     * 请求内缓存：「加盟商 × 区域名称段」规则表
+     *
+     * @var array<int,array{franchise_id:int,names:string[]}>|null
+     */
+    protected static $franchiseRegionRulesCache = null;
+
+    /**
+     * 请求内缓存：区域 ID => 用于匹配的名称段
+     *
+     * @var array<int,string[]>
+     */
+    protected static $regionMatchSegmentsCache = [];
+
+    /**
+     * 请求内缓存：加盟商 ID => 展示信息
+     *
+     * @var array<int,array{franchise_id:int,franchise_name:string,franchise_level:int,franchise_detail:string}>
+     */
+    protected static $franchiseInfoCache = [];
+
+    /**
+     * 已绑定加盟商的下单人解析（结果请求内缓存，避免同一列表里重复查库）
+     *
+     * @return array{franchise_id:int,franchise_name:string,franchise_level:int,franchise_detail:string}|null
+     */
+    protected static function resolveBoundUserFranchise(int $userId): ?array
+    {
+        // 已绑定后台账号（admin_user_bind）优先：该账号是某加盟商管理员则归该加盟商，否则视为总部
+        $adminBind = Db::name('admin_user_bind')->where('user_id', $userId)->find();
+        if ($adminBind) {
+            $boundFranchiseId = (int)Db::name('franchise')->where('admin_id', (int)$adminBind['admin_id'])->value('id');
+            if ($boundFranchiseId > 0) {
+                return self::franchiseInfoForId($boundFranchiseId);
+            }
+
+            return ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
+        }
+        $fm = Db::name('franchise_member')->where('user_id', $userId)->find();
+        if ($fm) {
+            return self::franchiseInfoForId((int)$fm['franchise_id']);
+        }
+
+        return null;
+    }
+
+    /**
+     * 批量预取一批下单人的加盟商归属（列表页在逐行解析前调用，把每行 2 次查询压成整页 3 次）
+     *
+     * @param int[] $userIds
+     */
+    public static function prefetchBoundUserFranchise(array $userIds): void
+    {
+        $todo = [];
+        foreach ($userIds as $userId) {
+            $userId = (int)$userId;
+            if ($userId > 0 && !array_key_exists($userId, self::$boundUserFranchiseCache)) {
+                $todo[$userId] = $userId;
+            }
+        }
+        if ($todo === []) {
+            return;
+        }
+        $todo = array_values($todo);
+
+        $bindRows = [];
+        foreach (Db::name('admin_user_bind')->whereIn('user_id', $todo)->field('user_id,admin_id')->select() as $row) {
+            $uid = (int)$row['user_id'];
+            if (!isset($bindRows[$uid])) {
+                $bindRows[$uid] = $row;
+            }
+        }
+        $memberRows = [];
+        foreach (Db::name('franchise_member')->whereIn('user_id', $todo)->field('user_id,franchise_id')->select() as $row) {
+            $uid = (int)$row['user_id'];
+            if (!isset($memberRows[$uid])) {
+                $memberRows[$uid] = $row;
+            }
+        }
+        $franchiseByAdminId = [];
+        $boundAdminIds = array_values(array_unique(array_map('intval', array_column($bindRows, 'admin_id'))));
+        if ($boundAdminIds !== []) {
+            foreach (Db::name('franchise')->whereIn('admin_id', $boundAdminIds)->field('id,admin_id')->select() as $row) {
+                $aid = (int)$row['admin_id'];
+                if (!isset($franchiseByAdminId[$aid])) {
+                    $franchiseByAdminId[$aid] = (int)$row['id'];
+                }
+            }
+        }
+
+        foreach ($todo as $userId) {
+            if (isset($bindRows[$userId])) {
+                // 与单行逻辑一致：绑定到某加盟商管理员则归该加盟商，否则视为总部
+                $franchiseId = $franchiseByAdminId[(int)$bindRows[$userId]['admin_id']] ?? 0;
+                self::$boundUserFranchiseCache[$userId] = $franchiseId > 0
+                    ? self::franchiseInfoForId($franchiseId)
+                    : ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
+            } elseif (isset($memberRows[$userId])) {
+                self::$boundUserFranchiseCache[$userId] = self::franchiseInfoForId((int)$memberRows[$userId]['franchise_id']);
+            } else {
+                // 未绑定任何加盟商：需要按装货区域判断，交给 resolveOrderFranchiseInfo 处理
+                self::$boundUserFranchiseCache[$userId] = null;
+            }
+        }
+    }
+
+    /**
+     * 把「加盟商 -> region_ids」预展开成「加盟商 + 匹配名称段」列表（保持原有 franchise、region_ids 顺序）
+     *
+     * @return array<int,array{franchise_id:int,names:string[]}>
+     */
+    protected static function franchiseRegionRules(): array
+    {
+        if (self::$franchiseRegionRulesCache !== null) {
+            return self::$franchiseRegionRulesCache;
+        }
+        $franchiseRows = Db::name('franchise')->field('id,region_ids')->select();
+        // 先把区域及上级名称批量读入内存，避免下面逐条查 area 表
+        $allRegionIds = [];
+        foreach ($franchiseRows as $f) {
+            foreach ((json_decode((string)($f['region_ids'] ?? '[]'), true) ?: []) as $rid) {
+                $rid = (int)$rid;
+                if ($rid > 0) {
+                    $allRegionIds[$rid] = $rid;
+                }
+            }
+        }
+        self::preloadAreaRowsWithAncestors($allRegionIds);
+        $rules = [];
+        foreach ($franchiseRows as $f) {
             foreach ((json_decode((string)($f['region_ids'] ?? '[]'), true) ?: []) as $rid) {
                 $names = self::getOrderRegionMatchSegments((int)$rid);
                 if ($names === []) {
                     continue;
                 }
-                if (\app\admin\library\AdminUserBind::orderRowMatchesRegionalNames($order, $names)) {
-                    return self::franchiseInfoForId((int)$f['id']);
-                }
+                $rules[] = ['franchise_id' => (int)$f['id'], 'names' => $names];
             }
         }
+        self::$franchiseRegionRulesCache = $rules;
 
-        return ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
+        return $rules;
     }
 
     /**
@@ -1050,9 +1303,12 @@ class FranchiseService
      */
     private static function franchiseInfoForId(int $franchiseId): array
     {
+        if (array_key_exists($franchiseId, self::$franchiseInfoCache)) {
+            return self::$franchiseInfoCache[$franchiseId];
+        }
         $f = Db::name('franchise')->where('id', $franchiseId)->find();
         if (!$f) {
-            return ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
+            return self::$franchiseInfoCache[$franchiseId] = ['franchise_id' => 0, 'franchise_name' => '', 'franchise_level' => 0, 'franchise_detail' => '总部'];
         }
         $level = (int)($f['level'] ?? 0);
         $name = trim((string)($f['name'] ?? ''));
@@ -1066,7 +1322,7 @@ class FranchiseService
                 ? ($name . '（二级' . ($parent !== '' ? '，一级：' . $parent : '') . '）')
                 : $name);
 
-        return ['franchise_id' => $franchiseId, 'franchise_name' => $name, 'franchise_level' => $level, 'franchise_detail' => $detail];
+        return self::$franchiseInfoCache[$franchiseId] = ['franchise_id' => $franchiseId, 'franchise_name' => $name, 'franchise_level' => $level, 'franchise_detail' => $detail];
     }
 
     /**
@@ -1144,6 +1400,25 @@ class FranchiseService
      */
     public static function isHqLineDispatch(int $adminId): bool
     {
+        if (array_key_exists($adminId, self::$hqLineDispatchCache)) {
+            return self::$hqLineDispatchCache[$adminId];
+        }
+
+        return self::$hqLineDispatchCache[$adminId] = self::doIsHqLineDispatch($adminId);
+    }
+
+    /**
+     * 请求内缓存：管理员 ID => 是否按总部直属线路/调度口径
+     *
+     * @var array<int,bool>
+     */
+    protected static $hqLineDispatchCache = [];
+
+    /**
+     * 总部直属线路/调度判定逻辑（结果由 isHqLineDispatch 缓存）
+     */
+    protected static function doIsHqLineDispatch(int $adminId): bool
+    {
         if (self::resolveFranchiseForAdmin($adminId) !== null) {
             return false;
         }
@@ -1173,6 +1448,33 @@ class FranchiseService
      */
     public static function applyHqOrderScope($query, int $adminId): void
     {
+        $scope = self::hqOrderScopeSql($adminId);
+        if ($scope['parts'] === []) {
+            $query->where('id', -1);
+
+            return;
+        }
+        $query->whereRaw('(' . implode(' OR ', $scope['parts']) . ')', $scope['bind']);
+    }
+
+    /**
+     * 请求内缓存：管理员 ID => 总部范围 SQL 片段，列表页 count/select 两次构造查询时复用
+     *
+     * @var array<int,array{parts:string[],bind:array<string,string>}>
+     */
+    protected static $hqOrderScopeCache = [];
+
+    /**
+     * 构造总部直属线路/调度的订单范围 SQL 片段（结果请求内缓存，避免重复查库）
+     *
+     * @return array{parts:string[],bind:array<string,string>}
+     */
+    protected static function hqOrderScopeSql(int $adminId): array
+    {
+        if (array_key_exists($adminId, self::$hqOrderScopeCache)) {
+            return self::$hqOrderScopeCache[$adminId];
+        }
+
         $ucol = '`fa_order`.`userid`';
         $lcol = '`fa_order`.`loading`';
         $hqAdminIds = Db::name('auth_group_access')->where('group_id', 1)->column('uid');
@@ -1197,6 +1499,8 @@ class FranchiseService
                 $franchiseRegionIds[(int)$rid] = true;
             }
         }
+        // 区域及上级名称一次读入内存，避免逐个区域查 area 表
+        self::preloadAreaRowsWithAncestors(array_keys($franchiseRegionIds));
         $claimedParts = [];
         foreach (array_keys($franchiseRegionIds) as $rid) {
             $names = self::getOrderRegionMatchSegments((int)$rid);
@@ -1223,12 +1527,7 @@ class FranchiseService
             $parts[] = $unbound;
         }
 
-        if ($parts === []) {
-            $query->where('id', -1);
-
-            return;
-        }
-        $query->whereRaw('(' . implode(' OR ', $parts) . ')', $bind);
+        return self::$hqOrderScopeCache[$adminId] = ['parts' => $parts, 'bind' => $bind];
     }
 
     /**
@@ -1286,20 +1585,86 @@ class FranchiseService
      */
     protected static function getOrderRegionMatchSegments(int $areaId): array
     {
+        if (array_key_exists($areaId, self::$regionMatchSegmentsCache)) {
+            return self::$regionMatchSegmentsCache[$areaId];
+        }
         $names = [];
-        $cur = Db::name('area')->where('id', $areaId)->find();
+        $cur = self::areaRow($areaId);
         $guard = 0;
         while ($cur && $guard < 3) {
             array_unshift($names, (string)$cur['name']);
             $pid = (int)($cur['pid'] ?? 0);
-            $cur = $pid > 0 ? Db::name('area')->where('id', $pid)->find() : null;
+            $cur = $pid > 0 ? self::areaRow($pid) : null;
             $guard++;
         }
         if (count($names) >= 3) {
-            return array_slice($names, -2); // 省/市/区 -> 市+区
+            return self::$regionMatchSegmentsCache[$areaId] = array_slice($names, -2); // 省/市/区 -> 市+区
         }
 
-        return $names; // 省/市 -> 省+市
+        return self::$regionMatchSegmentsCache[$areaId] = $names; // 省/市 -> 省+市
+    }
+
+    /**
+     * 请求内缓存：行政区 ID => row（只取 id/pid/name 三个字段）
+     *
+     * @var array<int,array<string,mixed>>
+     */
+    protected static $areaRowCache = [];
+
+    /**
+     * 读取行政区（命中请求内缓存则不再查库）
+     *
+     * @return array<string,mixed>|null
+     */
+    protected static function areaRow(int $areaId): ?array
+    {
+        if ($areaId <= 0) {
+            return null;
+        }
+        if (!array_key_exists($areaId, self::$areaRowCache)) {
+            $row = Db::name('area')->where('id', $areaId)->field('id,pid,name')->find();
+            self::$areaRowCache[$areaId] = $row ?: [];
+        }
+
+        return self::$areaRowCache[$areaId] ?: null;
+    }
+
+    /**
+     * 批量把行政区（含最多两级上级）读入内存，把「加盟商区域规则」展开时的 N 次查询压成几次
+     *
+     * @param int[] $areaIds
+     */
+    protected static function preloadAreaRowsWithAncestors(array $areaIds): void
+    {
+        $level = [];
+        foreach ($areaIds as $areaId) {
+            $areaId = (int)$areaId;
+            if ($areaId > 0 && !array_key_exists($areaId, self::$areaRowCache)) {
+                $level[$areaId] = $areaId;
+            }
+        }
+        for ($depth = 0; $depth < 3 && $level !== []; $depth++) {
+            $missing = array_values(array_diff_key($level, self::$areaRowCache));
+            if ($missing !== []) {
+                foreach (Db::name('area')->whereIn('id', $missing)->field('id,pid,name')->select() as $row) {
+                    self::$areaRowCache[(int)$row['id']] = $row;
+                }
+                // 不存在的 id 也标空，避免后续反复查库
+                foreach ($missing as $id) {
+                    if (!array_key_exists((int)$id, self::$areaRowCache)) {
+                        self::$areaRowCache[(int)$id] = [];
+                    }
+                }
+            }
+            $next = [];
+            foreach (array_keys($level) as $id) {
+                $pid = (int)(self::$areaRowCache[(int)$id]['pid'] ?? 0);
+                if ($pid > 0 && !array_key_exists($pid, self::$areaRowCache)) {
+                    $next[$pid] = $pid;
+                }
+            }
+            $level = $next;
+        }
     }
 
     public static function canOperate(int $franchiseId, ?string &$reason = null): bool
@@ -1462,10 +1827,20 @@ class FranchiseService
             return ['success' => false, 'msg' => '会员不存在'];
         }
 
+        // 到期时间：先规范化，格式不对直接返回提示
+        $newTimeTs = null;
+        if (isset($update['member_time'])) {
+            $newTimeTs = self::normalizeTime($update['member_time']);
+            if ($newTimeTs === null) {
+                return ['success' => false, 'msg' => '会员到期时间格式不正确，请重新选择到期日期'];
+            }
+        }
+        $oldTimeTs = self::normalizeTime($user['member_time'] ?? '');
         // 只对“真正有改动”的字段计费/更新（避免已兼职会员没改动却再扣150）
         $typeChange  = isset($update['membertype']) && (string)$update['membertype'] !== (string)($user['membertype'] ?? '');
-        $timeChange  = isset($update['member_time'])
-            && (int)self::normalizeTime($update['member_time']) !== (int)self::normalizeTime($user['member_time'] ?? '');
+        // 到期时间“按天”比较：填同一天视为未改动（避开库里带时分秒、表单只有日期导致的重复扣费）
+        $timeChange  = $newTimeTs !== null
+            && ($oldTimeTs === null || date('Y-m-d', $newTimeTs) !== date('Y-m-d', $oldTimeTs));
         $usernameChange = isset($update['username']) && (string)$update['username'] !== (string)($user['username'] ?? '');
         $platformChange = isset($update['platform_commission']) && (string)$update['platform_commission'] !== (string)($user['platform_commission'] ?? '');
 
@@ -1473,7 +1848,7 @@ class FranchiseService
         if ($usernameChange) { $realUpdate['username'] = $update['username']; }
         if ($platformChange) { $realUpdate['platform_commission'] = $update['platform_commission']; }
         if ($typeChange) { $realUpdate['membertype'] = $update['membertype']; }
-        if ($timeChange) { $realUpdate['member_time'] = self::normalizeTime($update['member_time']); }
+        if ($timeChange) { $realUpdate['member_time'] = $newTimeTs; }
 
         if ($realUpdate === []) {
             return ['success' => true, 'msg' => '未做任何修改（不扣费）', 'fee' => 0, 'months' => 0];
@@ -1483,6 +1858,8 @@ class FranchiseService
         $franchise = Db::name('franchise')->where('id', $franchiseId)->find();
         $fee = 0.0;
         $months = 0;
+        $feeBase = 0.0;
+        $chargeDetail = null;
 
         // 正式员工：免费但需名额
         if ($setFormal) {
@@ -1494,16 +1871,49 @@ class FranchiseService
                     return ['success' => false, 'msg' => '正式员工名额已满（上限 ' . $quota . '），无法设为正式员工'];
                 }
             }
+            // 设为正式员工不扣费，但到期时间已过期时系统会自动降级，先提示修改到期时间
+            $formalTime = $timeChange ? (int)$newTimeTs : self::normalizeTime($user['member_time'] ?? '');
+            if ($formalTime !== null && self::memberMonthsDetail(time(), $formalTime)['expired']) {
+                return [
+                    'success' => false,
+                    'msg'     => '会员到期时间（' . date('Y-m-d', $formalTime) . '）已早于当前日期，请先修改会员到期时间，再设为正式员工',
+                    'expired' => true,
+                    'months'  => 0,
+                    'fee'     => 0,
+                ];
+            }
         } else {
             // 计费：仅当改了“到期时间”或“职位(非正式)”才收费
             if ($timeChange || $typeChange) {
                 $cfg = self::getGlobalConfig();
                 $feeBase = (float)$cfg['member_month_fee'];
+                $now = time();
                 if ($timeChange) {
-                    $newTime = self::normalizeTime($update['member_time']);
-                    $now = time();
-                    $months = self::calcMemberMonths($now, $newTime);
+                    $newTime = (int)$newTimeTs;
+                    $chargeDetail = self::memberMonthsDetail($now, $newTime);
+                    // 到期时间比现在早（含今天）：先提示修改到期时间，避免“已经过期还在扣费”
+                    if ($chargeDetail['expired']) {
+                        return [
+                            'success' => false,
+                            'msg'     => '会员到期时间（' . date('Y-m-d', $newTime) . '）不晚于当前日期（' . date('Y-m-d', $now) . '），请先修改会员到期时间',
+                            'expired' => true,
+                            'months'  => 0,
+                            'fee'     => 0,
+                        ];
+                    }
+                    $months = $chargeDetail['months'];
                 } else {
+                    // 只改职位：按月 1 个月计费；但会员原到期时间已过期时，先提示修改到期时间
+                    $existTime = self::normalizeTime($user['member_time'] ?? '');
+                    if ($existTime !== null && self::memberMonthsDetail($now, $existTime)['expired']) {
+                        return [
+                            'success' => false,
+                            'msg'     => '该会员的到期时间（' . date('Y-m-d', $existTime) . '）已早于当前日期（' . date('Y-m-d', $now) . '），请先修改会员到期时间后再修改职位',
+                            'expired' => true,
+                            'months'  => 0,
+                            'fee'     => 0,
+                        ];
+                    }
                     $months = 1;
                 }
                 $fee = round($months * $feeBase, 2);
@@ -1547,10 +1957,14 @@ class FranchiseService
         }
 
         return [
-            'success' => true,
-            'msg'     => $fee > 0 ? ('修改成功，已扣费 ' . $fee . ' 元') : '修改成功（免费/不涉及扣费）',
-            'fee'     => $fee,
-            'months'  => $months,
+            'success'     => true,
+            'msg'         => $fee > 0 ? ('修改成功，已扣费 ' . $fee . ' 元') : '修改成功（免费/不涉及扣费）',
+            'fee'         => $fee,
+            'months'      => $months,
+            'fee_base'    => $feeBase,
+            'whole'       => $chargeDetail ? $chargeDetail['whole'] : true,
+            'whole_months'=> $chargeDetail ? $chargeDetail['whole_months'] : $months,
+            'extra_days'  => $chargeDetail ? $chargeDetail['extra_days'] : 0,
         ];
     }
 
@@ -1564,6 +1978,128 @@ class FranchiseService
         $t = strtotime((string)$value);
 
         return ($t === false || $t <= 0) ? null : $t;
+    }
+
+    /**
+     * 会员套餐时长换算成“月数”（与后台改会员到期“不足一月按一月”的口径一致）
+     *  - 月：数量即月数（3 个月 → 3）
+     *  - 年：× 12（1 年 → 12）
+     *  - 周：× 7 ÷ 30 向上取整（不足一月按一月）
+     */
+    public static function memberMonthsFromPackage(int $duration, string $unit): int
+    {
+        $duration = max(1, $duration);
+        switch ($unit) {
+            case 'year':
+                return $duration * 12;
+            case 'week':
+                return (int)ceil($duration * 7 / self::DAYS_PER_MONTH);
+            case 'month':
+            default:
+                return $duration;
+        }
+    }
+
+    /**
+     * 小程序端“开通/续费会员”支付成功后，给绑定了该会员的加盟商钱包入账
+     *
+     * 规则：
+     *  - 会员在小程序付款开通会员成功后，若该用户已被某加盟商绑定（fa_franchise_member），
+     *    则该加盟商钱包自动增加一笔收入 = 会员月费单价（总部设置，默认 150 元）× 本次开通月数。
+     *  - 未绑定加盟商的会员不产生入账。
+     *  - 幂等：同一笔会员充值订单（fa_memberorder.id）只会入账一次，避免微信重复回调重复加钱。
+     *
+     * @param int        $userId  充值会员的用户ID
+     * @param int        $orderId 会员充值订单ID（fa_memberorder.id）
+     * @param float|null $amount  每月单价；null = 取总部设置的“改会员单价 member_month_fee”
+     * @param string     $orderNo 会员充值订单号（仅用于流水备注）
+     * @param int        $months  本次开通的月数（季付=3、年付=12；不足一月按一月），入账总额 = 每月单价 × 月数
+     *
+     * @return array{success:bool,msg:string,franchise_id:int,amount:float,months:int,fee_base:float}
+     */
+    public static function rewardMemberRecharge(int $userId, int $orderId, ?float $amount = null, string $orderNo = '', int $months = 1): array
+    {
+        if ($userId <= 0 || $orderId <= 0) {
+            return ['success' => false, 'msg' => '参数错误', 'franchise_id' => 0, 'amount' => 0.0, 'months' => 0, 'fee_base' => 0.0];
+        }
+        $months = max(1, $months);
+        $bind = Db::name('franchise_member')->where('user_id', $userId)->find();
+        if (!$bind) {
+            return ['success' => true, 'msg' => '该会员未绑定加盟商，无需入账', 'franchise_id' => 0, 'amount' => 0.0, 'months' => $months, 'fee_base' => 0.0];
+        }
+        $franchiseId = (int)$bind['franchise_id'];
+        if (!Db::name('franchise')->where('id', $franchiseId)->value('id')) {
+            return ['success' => true, 'msg' => '加盟商不存在，跳过入账', 'franchise_id' => 0, 'amount' => 0.0, 'months' => $months, 'fee_base' => 0.0];
+        }
+        if ($amount === null) {
+            $cfg = self::getGlobalConfig();
+            $amount = (float)$cfg['member_month_fee'];
+        }
+        $feeBase = round((float)$amount, 2);
+        if ($feeBase <= 0) {
+            return ['success' => true, 'msg' => '入账金额为0，无需入账', 'franchise_id' => $franchiseId, 'amount' => 0.0, 'months' => $months, 'fee_base' => 0.0];
+        }
+        // 入账总额 = 每月单价 × 月数（季付=3 个月、年付=12 个月）
+        $amount = round($feeBase * $months, 2);
+
+        $user = Db::name('user')->where('id', $userId)->field('username,mobile')->find();
+        $userName = $user ? (string)($user['username'] ?? '') : '';
+        $userMobile = $user ? (string)($user['mobile'] ?? '') : '';
+        $userText = $userName !== '' ? $userName : ($userMobile !== '' ? $userMobile : ('#' . $userId));
+        $remark = '会员「' . $userText . '」小程序端开通会员'
+            . ($orderNo !== '' ? '（订单' . $orderNo . '）' : '')
+            . '，' . $months . ' 个月 × ' . $feeBase . ' 元，自动入账';
+
+        Db::startTrans();
+        try {
+            // 先锁加盟商行：同一笔/同一加盟商的并发回调在这里串行，配合下面的流水判重保证只入账一次
+            $row = Db::name('franchise')->where('id', $franchiseId)->lock(true)->find();
+            if (!$row) {
+                throw new Exception('加盟商不存在');
+            }
+            if (Db::name('franchise_wallet_log')
+                ->where('franchise_id', $franchiseId)
+                ->where('related_type', self::RELATED_MEMBER_RECHARGE)
+                ->where('related_id', $orderId)
+                ->value('id')) {
+                Db::commit();
+
+                return ['success' => true, 'msg' => '该会员充值订单已入账', 'franchise_id' => $franchiseId, 'amount' => 0.0, 'months' => $months, 'fee_base' => $feeBase];
+            }
+            $before = round((float)$row['wallet_balance'], 2);
+            $after = round($before + $amount, 2);
+            Db::name('franchise')->where('id', $franchiseId)->update([
+                'wallet_balance' => $after,
+                'updatetime'     => time(),
+            ]);
+            Db::name('franchise_wallet_log')->insert([
+                'franchise_id'      => $franchiseId,
+                'type'              => 'income',
+                'amount'            => $amount,
+                'balance_before'    => $before,
+                'balance_after'     => $after,
+                'related_type'      => self::RELATED_MEMBER_RECHARGE,
+                'related_id'        => $orderId,
+                'remark'            => $remark,
+                'operator_admin_id' => 0,
+                'operator_name'     => '系统',
+                'createtime'        => time(),
+            ]);
+            Db::commit();
+        } catch (\Exception $e) {
+            Db::rollback();
+
+            return ['success' => false, 'msg' => $e->getMessage(), 'franchise_id' => $franchiseId, 'amount' => 0.0, 'months' => $months, 'fee_base' => $feeBase];
+        }
+
+        return [
+            'success'      => true,
+            'msg'          => '加盟商「' . ($row['name'] ?? ('#' . $franchiseId)) . '」钱包已入账 ' . $amount . ' 元（' . $months . ' 个月 × ' . $feeBase . ' 元）',
+            'franchise_id' => $franchiseId,
+            'amount'       => $amount,
+            'months'       => $months,
+            'fee_base'     => $feeBase,
+        ];
     }
 
     /**

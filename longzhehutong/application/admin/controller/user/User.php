@@ -144,6 +144,8 @@ class User extends Backend
             $row['platform_commission'] = $row['platform_commission'] ?? '';
             $row['formal_employee_quota'] = (int)($franchise['formal_employee_quota'] ?? 0);
             $row['formal_employee_count'] = FranchiseService::getFormalEmployeeCount((int)$franchise['id']);
+            // 改身份/到期按整月扣费，前端提示需要月费单价
+            $this->assignconfig('memberMonthFee', (float)FranchiseService::getGlobalConfig()['member_month_fee']);
             if ($this->request->isPost()) {
                 $params = [
                     'username'            => $this->request->post('username'),

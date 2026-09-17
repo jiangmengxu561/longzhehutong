@@ -614,29 +614,35 @@ class Order extends Backend
         if (!empty($orderIds)) {
             $allOrders = Db::name('order')
                 ->whereIn('id', $orderIds)
-                ->where('pay_status', '<>', 4)
-                ->where('pay_status', '<>', 5)
-                ->where('pay_status', '<>', 8)
+                // 统计口径：订单已完成（pay_status=3）
+                ->where('pay_status', 3)
                 ->select();
-            $totalIncome = 0;   // 总收入（仅利润>=0的订单计入）
-            $totalWeight = 0;
-            $totalVolume = 0;
-            $totalOrders = 0;
+            $totalIncome = 0;   // 总收入（已完成 且 利润不为负的订单计入）
+            $totalExpense = 0;  // 总成本（已完成 且 利润不为负的订单计入）
+            $totalProfit = 0;   // 利润（已完成 且 利润不为负的订单计入）
+            $totalWeight = 0;   // 总吨数（同上口径）
+            $totalVolume = 0;   // 总方数（同上口径）
+            $totalOrders = 0;   // 总单量（同上口径）
             foreach ($allOrders as $order) {
+                $payPrice = isset($order['pay_price']) ? floatval($order['pay_price']) : 0;
+                $costCont = isset($order['cost_cont']) ? floatval($order['cost_cont']) : 0;
+                // 利润 = 总运费 - 总成本，与列表「利润」列口径保持一致
+                $profit = round($payPrice - $costCont, 2);
+                // 利润为负的订单整单不统计（金额、吨数、方数、单量均不计入）
+                if ($profit < 0) {
+                    continue;
+                }
                 $totalOrders++;
                 $totalWeight += isset($order['weight']) ? floatval($order['weight']) : 0;
                 $totalVolume += isset($order['direction']) ? floatval($order['direction']) : 0;
-                $payPrice = isset($order['pay_price']) ? floatval($order['pay_price']) : 0;
-                $totalCost = (isset($order['logistics_driver_cost']) ? floatval($order['logistics_driver_cost']) : 0)
-                    + (isset($order['pickup_driver_fee']) ? floatval($order['pickup_driver_fee']) : 0)
-                    + (isset($order['shipment_driver_fee']) ? floatval($order['shipment_driver_fee']) : 0);
-                $profit = $payPrice - $totalCost;
-                if ($profit > 0) {
-                    $totalIncome += $payPrice;
-                }
+                $totalIncome += $payPrice;
+                $totalExpense += $costCont;
+                $totalProfit += $profit;
             }
             $statistics = [
                 'total_income' => round($totalIncome, 2),
+                'total_expense' => round($totalExpense, 2),
+                'total_profit' => round($totalProfit, 2),
                 'total_weight' => round($totalWeight, 2),  // weight 单位已为吨
                 'total_volume' => round($totalVolume, 2),
                 'total_orders' => $totalOrders,
@@ -644,6 +650,8 @@ class Order extends Backend
         } else {
             $statistics = [
                 'total_income' => 0,
+                'total_expense' => 0,
+                'total_profit' => 0,
                 'total_weight' => 0,
                 'total_volume' => 0,
                 'total_orders' => 0,
